@@ -14,6 +14,12 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: () => import('../views/LoginView.vue')
+    },
+    {
+      path: '/medication/:id',
+      name: 'medication-detail',
+      component: () => import('../views/MedicationDetailView.vue'),
+      meta: { requiresAuth: true }
     }
   ],
 })
