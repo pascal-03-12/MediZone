@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, collection, query, where, getDocs } from 'firebase/firestore'; 
 import { db } from '../firebaseConfig';
 import { useAuthStore } from './auth';
 import type { IntakeEntry } from '../types/types';
@@ -9,30 +9,44 @@ export const useIntakeStore = defineStore('intake', () => {
     const intakes = ref<IntakeEntry[]>([]);
     const authStore = useAuthStore();
 
+    const fetchIntakes = async () => {
+        if (!authStore.user) return;
+
+        try {
+            const q = query(
+                collection(db, 'intakes'),
+                where("userId", "==", authStore.user.uid)
+            );
+
+            const querySnapshot = await getDocs(q);
+            
+            intakes.value = querySnapshot.docs.map(doc => {
+                return doc.data() as IntakeEntry;
+            });
+            
+            console.log("Einnahmen geladen:", intakes.value);
+        } catch (error) {
+            console.error("Fehler beim Laden der Einnahmen:", error);
+        }
+    };
+
     const addIntake = async (entry: IntakeEntry) => {
         intakes.value.push(entry);
-        console.log("Intake added locally:", entry);
-
-        if (!authStore.user) {
-            console.warn("Benutzer nicht eingeloggt. Speicherung in Datenbank übersprungen.");
-            return;
-        }
+        // ...
+        if (!authStore.user) return;
 
         try {
             await setDoc(doc(db, 'intakes', entry.id), {
                 ...entry,
                 userId: authStore.user.uid
             });
-            console.log("Einnahme erfolgreich in Firestore gespeichert!");
         } catch (error) {
-            console.error("Fehler beim Speichern der Einnahme:", error);
         }
     };
 
     const getTodayIntakes = () => {
         const todayPrefix = new Date().toISOString().split('T')[0];
-        
-        return intakes.value.filter(intake => intake.date.startsWith(todayPrefix));
+        return intakes.value.filter(intake => intake.date && intake.date.startsWith(todayPrefix));
     };
 
     const dailyCount = () => getTodayIntakes().length;
@@ -40,6 +54,7 @@ export const useIntakeStore = defineStore('intake', () => {
     return {
         intakes,
         addIntake,
+        fetchIntakes, 
         getTodayIntakes,
         dailyCount
     };

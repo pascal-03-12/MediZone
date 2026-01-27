@@ -31,6 +31,6 @@ const { isSupported, isScanning, error, startScan } = useNFC();
       </div>
     </div>
 
-    <DailyOverview />
+    <DailyOverview/>
   </main>
 </template>

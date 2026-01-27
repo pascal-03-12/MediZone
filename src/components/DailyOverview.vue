@@ -1,14 +1,21 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue'; // onMounted importieren
 import { useIntakeStore } from '../stores/intake';
 
 const intakeStore = useIntakeStore();
 
+// Daten laden, sobald die Komponente angezeigt wird
+onMounted(() => {
+  intakeStore.fetchIntakes();
+});
+
 const todayIntakes = computed(() => intakeStore.getTodayIntakes());
 const count = computed(() => intakeStore.dailyCount());
 
-const formatTime = (timestamp: number) => {
-  return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+// Zeitformatierung anpassen
+const formatTime = (dateString: string) => {
+  if (!dateString) return '';
+  return new Date(dateString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 };
 </script>
 
@@ -22,7 +29,6 @@ const formatTime = (timestamp: number) => {
     <ul v-if="todayIntakes.length > 0" class="space-y-2">
       <li v-for="intake in todayIntakes" :key="intake.id" class="flex justify-between items-center bg-gray-50 p-2 rounded">
         <span class="font-medium">
-             <!-- medId is currently just a string, ideally we'd look up the name, but for now showing ID or we need a way to get name -->
              {{ intake.medId }}
         </span>
         <div class="flex items-center gap-2">
@@ -30,7 +36,7 @@ const formatTime = (timestamp: number) => {
               {{ intake.dose }} {{ intake.doseUnit }}
             </span>
             <span class="text-gray-500 text-sm">
-              {{ formatTime(intake.timestamp) }}
+              {{ formatTime(intake.date) }}
             </span>
         </div>
       </li>
