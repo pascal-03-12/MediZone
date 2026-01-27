@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'; // onMounted importieren
+import { computed, onMounted } from 'vue'; 
 import { useIntakeStore } from '../stores/intake';
 
 const intakeStore = useIntakeStore();
@@ -29,7 +29,7 @@ const formatTime = (dateString: string) => {
     <ul v-if="todayIntakes.length > 0" class="space-y-2">
       <li v-for="intake in todayIntakes" :key="intake.id" class="flex justify-between items-center bg-gray-50 p-2 rounded">
         <span class="font-medium">
-             {{ intake.medId }}
+             {{ intake.medName || intake.medId }}
         </span>
         <div class="flex items-center gap-2">
             <span class="text-sm bg-blue-100 text-blue-800 px-2 py-0.5 rounded">

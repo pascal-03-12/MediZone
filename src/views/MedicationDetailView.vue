@@ -16,7 +16,8 @@ const logIntake = () => {
   const entry: IntakeEntry = {
     id: crypto.randomUUID(),
     medId: medStore.currentMedication.id,
-    date: new Date().toISOString(), // Geändert zu Datummm
+    medName: medStore.currentMedication.name, // <-- NEU: Name speichern
+    date: new Date().toISOString(), 
     dose: medStore.currentMedication.standardDose,
     doseUnit: medStore.currentMedication.doseUnit,
   };
