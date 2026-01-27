@@ -11,8 +11,18 @@ export const useIntakeStore = defineStore('intake', () => {
         // Here we would typically persist to storage (Person D's task)
     };
 
+    const getTodayIntakes = () => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return intakes.value.filter(intake => intake.timestamp >= today.getTime());
+    };
+
+    const dailyCount = () => getTodayIntakes().length;
+
     return {
         intakes,
-        addIntake
+        addIntake,
+        getTodayIntakes,
+        dailyCount
     };
 });

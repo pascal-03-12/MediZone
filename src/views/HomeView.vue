@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useNFC } from '../composables/useNFC';
+import DailyOverview from '../components/DailyOverview.vue';
 
 const { isSupported, isScanning, error, startScan } = useNFC();
 </script>
@@ -29,5 +30,7 @@ const { isSupported, isScanning, error, startScan } = useNFC();
         </div>
       </div>
     </div>
+
+    <DailyOverview />
   </main>
 </template>
