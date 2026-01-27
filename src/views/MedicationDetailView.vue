@@ -17,65 +17,58 @@ onMounted(() => {
 </script>
 
 <template>
-  <main class="detail-container">
+  <main class="p-6 max-w-xl mx-auto">
     
-    <div v-if="medStore.loading" class="loading">
+    <div v-if="medStore.loading" class="text-center p-8 text-gray-600">
       <p>Lade Medikamenten-Daten...</p>
     </div>
 
-    <div v-else-if="medStore.error" class="error-card">
-      <h2>Hoppla!</h2>
-      <p>{{ medStore.error }}</p>
-      <button @click="router.push('/')">Zurück zum Dashboard</button>
+    <div v-else-if="medStore.error" class="text-center text-red-500">
+      <h2 class="text-2xl font-bold mb-4">Hoppla!</h2>
+      <p class="mb-4">{{ medStore.error }}</p>
+      <button 
+        @click="router.push('/')"
+        class="px-6 py-3 bg-gray-100 text-gray-800 border-none rounded-lg font-bold cursor-pointer hover:bg-gray-200 transition-colors"
+      >
+        Zurück zum Dashboard
+      </button>
     </div>
 
-    <div v-else-if="medStore.currentMedication" class="med-card">
-      <header>
-        <h1>{{ medStore.currentMedication.name }}</h1>
-        <span class="badge">{{ medStore.currentMedication.dosageForm }}</span>
+    <div v-else-if="medStore.currentMedication" class="bg-white rounded-xl p-8 shadow-lg">
+      <header class="flex justify-between items-center mb-8">
+        <h1 class="m-0 text-2xl font-bold text-gray-800">{{ medStore.currentMedication.name }}</h1>
+        <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm">
+          {{ medStore.currentMedication.dosageForm }}
+        </span>
       </header>
 
-      <section class="info-grid">
-        <div class="info-item">
-          <label>Wirkstoff</label>
-          <p>{{ medStore.currentMedication.substance }}</p>
+      <section class="grid grid-cols-2 gap-6 mb-8">
+        <div>
+          <label class="block text-sm text-gray-500 mb-1">Wirkstoff</label>
+          <p class="m-0 font-medium text-lg">{{ medStore.currentMedication.substance }}</p>
         </div>
-        <div class="info-item">
-          <label>Dosierung</label>
-          <p>{{ medStore.currentMedication.standardDose }} {{ medStore.currentMedication.doseUnit }}</p>
+        <div>
+          <label class="block text-sm text-gray-500 mb-1">Dosierung</label>
+          <p class="m-0 font-medium text-lg">{{ medStore.currentMedication.standardDose }} {{ medStore.currentMedication.doseUnit }}</p>
         </div>
-        <div class="info-item full-width">
-          <label>Anweisung</label>
-          <p>{{ medStore.currentMedication.instructions }}</p>
+        <div class="col-span-2">
+          <label class="block text-sm text-gray-500 mb-1">Anweisung</label>
+          <p class="m-0 font-medium text-lg">{{ medStore.currentMedication.instructions }}</p>
         </div>
       </section>
 
-      <div class="actions">
-        <button class="btn-primary">Einnahme loggen</button>
-        <button class="btn-secondary" @click="router.push('/')">Zurück</button>
+      <div class="flex gap-4">
+        <button class="flex-1 py-3 bg-primary text-white border-none rounded-lg font-bold cursor-pointer hover:bg-primary-hover transition-colors">
+          Einnahme loggen
+        </button>
+        <button 
+          @click="router.push('/')"
+          class="flex-1 py-3 bg-gray-100 text-gray-800 border-none rounded-lg font-bold cursor-pointer hover:bg-gray-200 transition-colors"
+        >
+          Zurück
+        </button>
       </div>
     </div>
 
   </main>
 </template>
-
-<style scoped>
-.detail-container { padding: 1.5rem; max-width: 600px; margin: 0 auto; }
-.med-card { background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
-h1 { margin: 0; color: #2c3e50; }
-.badge { background: #e3f2fd; color: #1976d2; padding: 4px 12px; border-radius: 16px; font-size: 0.9rem; }
-
-.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem; }
-.info-item label { display: block; font-size: 0.85rem; color: #7f8c8d; margin-bottom: 4px; }
-.info-item p { margin: 0; font-weight: 500; font-size: 1.1rem; }
-.full-width { grid-column: 1 / -1; }
-
-.actions { display: flex; gap: 1rem; }
-button { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
-.btn-primary { background: #4CAF50; color: white; }
-.btn-secondary { background: #f5f5f5; color: #333; }
-
-.error-card { text-align: center; color: #e74c3c; }
-.loading { text-align: center; padding: 2rem; color: #666; }
-</style>

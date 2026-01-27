@@ -19,132 +19,55 @@ const handleSubmit = async () => {
 </script>
 
 <template>
-  <div class="login-container">
-    <div class="card">
-        <h2>{{ isRegister ? 'Registrieren' : 'Anmelden' }}</h2>
+  <div class="flex justify-center items-center min-h-screen bg-gray-100 p-4">
+    <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+        <h2 class="text-center mb-6 text-gray-800 text-2xl font-bold">
+          {{ isRegister ? 'Registrieren' : 'Anmelden' }}
+        </h2>
         <form @submit.prevent="handleSubmit">
-            <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" v-model="email" required placeholder="deine@email.com" />
+            <div class="mb-4">
+                <label for="email" class="block mb-2 text-gray-600 text-sm">Email</label>
+                <input 
+                  type="email" 
+                  id="email" 
+                  v-model="email" 
+                  required 
+                  placeholder="deine@email.com"
+                  class="w-full p-3 border border-gray-300 rounded-md text-base transition-colors focus:outline-none focus:border-primary"
+                />
             </div>
-            <div class="form-group">
-                <label for="password">Passwort</label>
-                <input type="password" id="password" v-model="password" required placeholder="********" />
+            <div class="mb-4">
+                <label for="password" class="block mb-2 text-gray-600 text-sm">Passwort</label>
+                <input 
+                  type="password" 
+                  id="password" 
+                  v-model="password" 
+                  required 
+                  placeholder="********"
+                  class="w-full p-3 border border-gray-300 rounded-md text-base transition-colors focus:outline-none focus:border-primary"
+                />
             </div>
-            <div v-if="authStore.error" class="error">
+            <div v-if="authStore.error" class="text-red-700 bg-red-50 p-3 rounded-md mt-4 text-sm text-center">
                 {{ authStore.error }}
             </div>
-            <button type="submit" :disabled="authStore.loading">
+            <button 
+              type="submit" 
+              :disabled="authStore.loading"
+              class="w-full p-3 bg-primary text-white border-none rounded-md text-base font-bold cursor-pointer transition-colors mt-4 hover:bg-primary-hover disabled:bg-primary-light disabled:cursor-not-allowed"
+            >
                 {{ authStore.loading ? 'Lade...' : (isRegister ? 'Registrieren' : 'Anmelden') }}
             </button>
         </form>
-        <p class="toggle-text">
+        <p class="text-center mt-6 text-sm text-gray-600">
             {{ isRegister ? 'Bereits einen Account?' : 'Noch keinen Account?' }}
-            <a href="#" @click.prevent="isRegister = !isRegister">
+            <a 
+              href="#" 
+              @click.prevent="isRegister = !isRegister"
+              class="text-primary no-underline font-bold hover:underline"
+            >
                 {{ isRegister ? 'Hier anmelden' : 'Hier registrieren' }}
             </a>
         </p>
     </div>
   </div>
 </template>
-
-<style scoped>
-.login-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    background-color: #f0f2f5;
-    padding: 1rem;
-}
-
-.card {
-    background: white;
-    padding: 2rem;
-    border-radius: 12px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 400px;
-}
-
-h2 {
-    text-align: center;
-    margin-bottom: 1.5rem;
-    color: #333;
-}
-
-.form-group {
-    margin-bottom: 1rem;
-}
-
-label {
-    display: block;
-    margin-bottom: 0.5rem;
-    color: #666;
-    font-size: 0.9rem;
-}
-
-input {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 1rem;
-    transition: border-color 0.2s;
-}
-
-input:focus {
-    outline: none;
-    border-color: #4CAF50;
-}
-
-button {
-    width: 100%;
-    padding: 0.75rem;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 1rem;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    margin-top: 1rem;
-}
-
-button:hover:not(:disabled) {
-    background-color: #45a049;
-}
-
-button:disabled {
-    background-color: #a5d6a7;
-    cursor: not-allowed;
-}
-
-.error {
-    color: #d32f2f;
-    background-color: #ffebee;
-    padding: 0.75rem;
-    border-radius: 6px;
-    margin-top: 1rem;
-    font-size: 0.9rem;
-    text-align: center;
-}
-
-.toggle-text {
-    text-align: center;
-    margin-top: 1.5rem;
-    font-size: 0.9rem;
-    color: #666;
-}
-
-a {
-    color: #4CAF50;
-    text-decoration: none;
-    font-weight: bold;
-}
-
-a:hover {
-    text-decoration: underline;
-}
-</style>

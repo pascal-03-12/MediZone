@@ -10,33 +10,15 @@ onMounted(() => {
 </script>
 
 <template>
-  <header v-if="authStore.user">
+  <header v-if="authStore.user" class="p-4 bg-white shadow flex justify-end">
     <nav>
-      <button @click="authStore.logout">Abmelden</button>
+      <button 
+        @click="authStore.logout"
+        class="px-4 py-2 bg-danger text-white border-none rounded cursor-pointer hover:bg-danger-hover transition-colors"
+      >
+        Abmelden
+      </button>
     </nav>
   </header>
   <RouterView />
 </template>
-
-<style scoped>
-header {
-  padding: 1rem;
-  background-color: #fff;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  display: flex;
-  justify-content: flex-end;
-}
-
-button {
-  padding: 0.5rem 1rem;
-  background-color: #ff5252;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-button:hover {
-  background-color: #ff1744;
-}
-</style>
