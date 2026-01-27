@@ -28,8 +28,16 @@ export type IntakeEntry = {
     id: string;
     medId: MedicationId;
     medName: string; // <-- NEU: Name des Medikaments
-    date: string;      
+    date: string;
     dose: number;
     doseUnit: string;
     note?: string;
+};
+
+export type Reminder = {
+    id: string;
+    medId: MedicationId;
+    time: string;
+    enabled: boolean;
+    snoozedUntil?: number;
 };
