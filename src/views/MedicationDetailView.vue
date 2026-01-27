@@ -2,10 +2,28 @@
 import { onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useMedicationStore } from '../stores/medication';
+import { useIntakeStore } from '../stores/intake';
+import type { IntakeEntry } from '../types/types';
 
 const route = useRoute();
 const router = useRouter();
 const medStore = useMedicationStore();
+const intakeStore = useIntakeStore();
+
+const logIntake = () => {
+  if (!medStore.currentMedication) return;
+
+  const entry: IntakeEntry = {
+    id: crypto.randomUUID(),
+    medId: medStore.currentMedication.id,
+    timestamp: Date.now(),
+    dose: medStore.currentMedication.standardDose,
+    doseUnit: medStore.currentMedication.doseUnit,
+  };
+
+  intakeStore.addIntake(entry);
+  alert(`Einnahme von ${medStore.currentMedication.name} protokolliert!`);
+};
 
 const medId = route.params.id as string;
 
@@ -58,7 +76,10 @@ onMounted(() => {
       </section>
 
       <div class="flex gap-4">
-        <button class="flex-1 py-3 bg-primary text-white border-none rounded-lg font-bold cursor-pointer hover:bg-primary-hover transition-colors">
+        <button 
+          @click="logIntake"
+          class="flex-1 py-3 bg-primary text-white border-none rounded-lg font-bold cursor-pointer hover:bg-primary-hover transition-colors"
+        >
           Einnahme loggen
         </button>
         <button 
