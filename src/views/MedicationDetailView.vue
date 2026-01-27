@@ -27,9 +27,12 @@ const logIntake = () => {
 
 const medId = route.params.id as string;
 
-onMounted(() => {
+onMounted(async () => {
   if (medId) {
-    medStore.fetchMedicationById(medId);
+    const med = await medStore.fetchMedicationById(medId);
+    if (med) {
+      medStore.setLastScanned(med);
+    }
   }
 });
 </script>
