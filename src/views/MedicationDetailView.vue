@@ -1,14 +1,19 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useMedicationStore } from '../stores/medication';
 import { useIntakeStore } from '../stores/intake';
+import { useReminderStore } from '../stores/reminder';
 import type { IntakeEntry } from '../types/types';
 
 const route = useRoute();
 const router = useRouter();
 const medStore = useMedicationStore();
 const intakeStore = useIntakeStore();
+const reminderStore = useReminderStore();
+
+const medId = route.params.id as string;
+const newReminderTime = ref('');
 
 const logIntake = () => {
   if (!medStore.currentMedication) return;
@@ -16,7 +21,7 @@ const logIntake = () => {
   const entry: IntakeEntry = {
     id: crypto.randomUUID(),
     medId: medStore.currentMedication.id,
-    date: new Date().toISOString(), // Geändert zu Datummm
+    date: new Date().toISOString(),
     dose: medStore.currentMedication.standardDose,
     doseUnit: medStore.currentMedication.doseUnit,
   };
@@ -25,10 +30,16 @@ const logIntake = () => {
   alert(`Einnahme von ${medStore.currentMedication.name} protokolliert!`);
 };
 
-const medId = route.params.id as string;
+const addReminder = () => {
+    if(!newReminderTime.value) return;
+    reminderStore.addReminder(medId, newReminderTime.value);
+    newReminderTime.value = '';
+};
 
 onMounted(async () => {
   if (medId) {
+    reminderStore.initReminders();
+    
     const med = await medStore.fetchMedicationById(medId);
     if (med) {
       medStore.setLastScanned(med);
@@ -38,7 +49,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <main class="p-6 max-w-xl mx-auto">
+  <main class="p-6 max-w-xl mx-auto pb-20">
     
     <div v-if="medStore.loading" class="text-center p-8 text-gray-600">
       <p>Lade Medikamenten-Daten...</p>
@@ -78,6 +89,54 @@ onMounted(async () => {
         </div>
       </section>
 
+      <section class="mb-8 border-t pt-6 border-gray-100">
+        <h3 class="font-bold text-lg mb-4 text-gray-800 flex items-center gap-2">
+            ⏰ Erinnerungen
+        </h3>
+        
+        <div class="space-y-3 mb-4">
+            <div 
+                v-for="reminder in reminderStore.getRemindersByMedId(medId)" 
+                :key="reminder.id"
+                class="flex items-center justify-between bg-gray-50 p-3 rounded-lg border border-gray-100"
+            >
+                <div class="flex items-center gap-3">
+                    <input 
+                        type="checkbox" 
+                        :checked="reminder.enabled" 
+                        @change="reminderStore.toggleReminder(reminder.id)"
+                        class="w-5 h-5 text-primary rounded focus:ring-primary cursor-pointer"
+                    />
+                    <span :class="{'text-gray-400 line-through': !reminder.enabled}" class="font-mono text-lg font-medium">
+                        {{ reminder.time }} Uhr
+                    </span>
+                </div>
+                <button 
+                    @click="reminderStore.removeReminder(reminder.id)"
+                    class="text-red-400 hover:text-red-600 text-sm font-medium px-2 py-1 cursor-pointer"
+                >
+                    Löschen
+                </button>
+            </div>
+            <div v-if="reminderStore.getRemindersByMedId(medId).length === 0" class="text-sm text-gray-400 italic">
+                Keine Erinnerungen gesetzt.
+            </div>
+        </div>
+
+        <div class="flex gap-2">
+            <input 
+                type="time" 
+                v-model="newReminderTime"
+                class="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-primary font-mono text-lg"
+            />
+            <button 
+                @click="addReminder"
+                class="bg-secondary text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-600 transition-colors text-xl cursor-pointer"
+            >
+                +
+            </button>
+        </div>
+      </section>
       <div class="flex gap-4">
         <button 
           @click="logIntake"
