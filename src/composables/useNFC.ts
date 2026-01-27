@@ -1,5 +1,6 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useMedicationStore } from '../stores/medication';
 
 export function useNFC() {
   const isSupported = 'NDEFReader' in window;
@@ -9,7 +10,7 @@ export function useNFC() {
 
   const startScan = async () => {
     if (!isSupported) return;
-    
+
     try {
       const ndef = new NDEFReader();
       await ndef.scan();
@@ -22,7 +23,7 @@ export function useNFC() {
           if (record.recordType === "url") {
             const url = textDecoder.decode(record.data);
             handleUrlScan(url);
-          } 
+          }
           else if (record.recordType === "text") {
             const text = textDecoder.decode(record.data);
             if (text.includes('/medication/')) {
@@ -37,12 +38,20 @@ export function useNFC() {
     }
   };
 
-  const handleUrlScan = (url: string) => {
+  const handleUrlScan = async (url: string) => {
     try {
       const parts = url.split('/');
       const id = parts[parts.length - 1];
-      
+
       if (id) {
+        // Fetch medication data to cache it
+        const store = useMedicationStore();
+        const medication = await store.fetchMedicationById(id);
+
+        if (medication) {
+          store.setLastScanned(medication);
+        }
+
         router.push(`/medication/${id}`);
         isScanning.value = false;
       }

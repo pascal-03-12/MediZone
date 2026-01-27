@@ -1,8 +1,25 @@
 <script setup lang="ts">
 import { useNFC } from '../composables/useNFC';
 import DailyOverview from '../components/DailyOverview.vue';
+import { useMedicationStore } from '../stores/medication';
+import { storeToRefs } from 'pinia';
+import { onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 
 const { isSupported, isScanning, error, startScan } = useNFC();
+const store = useMedicationStore();
+const { lastScannedMedication } = storeToRefs(store);
+const router = useRouter();
+
+onMounted(() => {
+  store.fetchLastScanned();
+});
+
+const openLastScanned = () => {
+  if (lastScannedMedication.value) {
+    router.push(`/medication/${lastScannedMedication.value.id}`);
+  }
+};
 </script>
 
 <template>
@@ -10,6 +27,14 @@ const { isSupported, isScanning, error, startScan } = useNFC();
     <h1 class="text-3xl font-bold text-gray-800 mb-8">MediZone Dashboard</h1>
     
     <div class="scan-section">
+      <div v-if="lastScannedMedication" class="mb-8 cursor-pointer transform transition-transform" @click="openLastScanned">
+        <div class="bg-green-50 border border-green-200 rounded-xl p-4 shadow-sm inline-block min-w-[300px]">
+          <h2 class="text-sm font-semibold text-green-600 uppercase tracking-wide mb-1">Letztes gescanntes Medikament</h2>
+          <p class="text-xl font-bold text-gray-900">{{ lastScannedMedication.name }}</p>
+          <p class="text-gray-600">{{ lastScannedMedication.substance }}</p>
+        </div>
+      </div>
+      
       <div v-if="isSupported" class="active-scan">
         <button 
           @click="startScan" 
