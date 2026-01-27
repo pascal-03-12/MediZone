@@ -1,6 +1,5 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-// NEU: Importiere Cache-Funktionen
 import { 
   initializeFirestore, 
   persistentLocalCache, 
@@ -18,10 +17,8 @@ const app = initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
 
-// ÄNDERUNG: Statt getFirestore(app) nutzen wir initializeFirestore mit Config
 export const db = initializeFirestore(app, {
   localCache: persistentLocalCache({
-    // Erlaubt die Nutzung in mehreren Tabs gleichzeitig (sehr empfohlen)
     tabManager: persistentMultipleTabManager() 
   })
 });
