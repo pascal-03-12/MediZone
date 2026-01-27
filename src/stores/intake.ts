@@ -30,9 +30,9 @@ export const useIntakeStore = defineStore('intake', () => {
     };
 
     const getTodayIntakes = () => {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        return intakes.value.filter(intake => intake.timestamp >= today.getTime());
+        const todayPrefix = new Date().toISOString().split('T')[0];
+        
+        return intakes.value.filter(intake => intake.date.startsWith(todayPrefix));
     };
 
     const dailyCount = () => getTodayIntakes().length;
