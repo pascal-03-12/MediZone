@@ -13,6 +13,7 @@ export type DosageForm =
 
 export type Medication = {
     id: MedicationId;
+    userId: UserId; 
     name: string;
     substance: string;
     dosageForm: DosageForm;
