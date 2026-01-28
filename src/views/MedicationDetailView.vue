@@ -11,25 +11,59 @@ const router = useRouter();
 const medStore = useMedicationStore();
 const intakeStore = useIntakeStore();
 const reminderStore = useReminderStore();
-
+const withFood = ref(false);
 const medId = route.params.id as string;
 const newReminderTime = ref('');
 
-const logIntake = () => {
+const logIntake = async () => {
   if (!medStore.currentMedication) return;
+
+  const nowIso = new Date().toISOString();
+
+  const rules = intakeStore.checkIntakeRules({
+    medId: medStore.currentMedication.id,
+    doseToAdd: medStore.currentMedication.standardDose,
+    maxPerDay: medStore.currentMedication.maxPerDay,
+    minHoursBetween: medStore.currentMedication.minHoursBetween,
+    nowIso,
+  });
+
+  // Mindestabstand: hart blocken
+  if (rules.tooSoon) {
+    alert(
+        `Zu früh: Bitte warte noch ca. ${rules.minutesLeft} Minuten, bevor du dieses Medikament wieder nimmst.`
+    );
+    return;
+  }
+
+  // Tageslimit: warnen + optional trotzdem loggen
+  if (rules.exceedsMax) {
+    const ok = confirm(
+        `Warnung: Tageslimit überschritten!\n` +
+        `Heute bereits: ${rules.sumToday} ${medStore.currentMedication.doseUnit}\n` +
+        `Mit dieser Einnahme: ${rules.wouldBe} ${medStore.currentMedication.doseUnit}\n` +
+        `Max/Tag: ${medStore.currentMedication.maxPerDay} ${medStore.currentMedication.doseUnit}\n\n` +
+        `Trotzdem protokollieren?`
+    );
+    if (!ok) return;
+  }
 
   const entry: IntakeEntry = {
     id: crypto.randomUUID(),
     medId: medStore.currentMedication.id,
-    medName: medStore.currentMedication.name, // <-- NEU: Name speichern
-    date: new Date().toISOString(), 
-
+    medName: medStore.currentMedication.name,
+    date: nowIso,
     dose: medStore.currentMedication.standardDose,
     doseUnit: medStore.currentMedication.doseUnit,
+    withFood: withFood.value,
   };
 
-  intakeStore.addIntake(entry);
-  alert(`Einnahme von ${medStore.currentMedication.name} protokolliert!`);
+  await intakeStore.addIntake(entry);
+
+  alert(
+      `Einnahme von ${medStore.currentMedication.name} protokolliert!` +
+      (withFood.value ? ' (mit Essen)' : ' (ohne Essen)')
+  );
 };
 
 const addReminder = () => {
@@ -138,6 +172,19 @@ onMounted(async () => {
                 +
             </button>
         </div>
+      </section>
+      <section class="mb-4">
+        <label class="flex items-center gap-3 text-gray-700 cursor-pointer select-none">
+          <input
+              type="checkbox"
+              v-model="withFood"
+              class="w-5 h-5 text-primary rounded focus:ring-primary cursor-pointer"
+          />
+          <span class="font-medium">Einnahme mit Essen</span>
+        </label>
+        <p class="text-xs text-gray-500 mt-1">
+          Wird im Einnahmeprotokoll gespeichert.
+        </p>
       </section>
       <div class="flex gap-4">
         <button 
