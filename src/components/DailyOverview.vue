@@ -8,11 +8,8 @@ onMounted(() => {
   intakeStore.fetchIntakes();
 });
 
-// -- ZUSTAND --
 const viewDate = ref(new Date()); 
 
-// Initialisiere selectedDate mit dem lokalen Datum (nicht UTC!)
-// Wir nutzen hier direkt unsere neue Hilfsfunktion
 const getLocalISODate = (date: Date) => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -114,8 +111,7 @@ const displayDateDetails = computed(() => {
     const d = new Date(selectedDate.value);
     const today = formatDateISO(new Date());
     
-    // Kleiner Fix: Date parsing von "YYYY-MM-DD" interpretiert Browser oft als UTC.
-    // Wir erzwingen Mittag, damit das Datum stabil bleibt bei der Anzeige
+
     const displayDateObj = new Date(selectedDate.value + 'T12:00:00');
 
     if (selectedDate.value === today) return 'Heute';
