@@ -2,6 +2,7 @@
 import { onMounted } from 'vue';
 import { useAuthStore } from './stores/auth';
 import { useReminderStore } from './stores/reminder';
+import StreakBadge from './components/StreakBadge.vue';
 
 const authStore = useAuthStore();
 const reminderStore = useReminderStore();
@@ -27,6 +28,9 @@ onMounted(() => {
         >
           Abmelden
         </button>
+        <div class="fixed top-20 right-4 z-50">
+      <StreakBadge />
+    </div>
       </nav>
     </header>
     <RouterView />
