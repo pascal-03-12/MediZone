@@ -22,6 +22,7 @@ export type Medication = {
     instructions: string;
     maxPerDay: number;
     minHoursBetween: number;
+    userId?: string;
 };
 
 export type IntakeEntry = {

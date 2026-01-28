@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'; 
+import { computed, onMounted, ref } from 'vue'; 
 import { useIntakeStore } from '../stores/intake';
 
 const intakeStore = useIntakeStore();
@@ -9,8 +9,47 @@ onMounted(() => {
   intakeStore.fetchIntakes();
 });
 
-const todayIntakes = computed(() => intakeStore.getTodayIntakes());
-const count = computed(() => intakeStore.dailyCount());
+const currentDate = ref(new Date().toISOString().split('T')[0]);
+const dateInput = ref<HTMLInputElement | null>(null);
+
+const filteredIntakes = computed(() => {
+    return intakeStore.getIntakesForDate(currentDate.value);
+});
+
+const displayDate = computed(() => {
+    const today = new Date().toISOString().split('T')[0];
+    const yesterdayDate = new Date();
+    yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+    const yesterday = yesterdayDate.toISOString().split('T')[0];
+
+    if (currentDate.value === today) return 'Heute';
+    if (currentDate.value === yesterday) return 'Gestern';
+    
+    return new Date(currentDate.value).toLocaleDateString('de-DE'); 
+});
+
+const changeDate = (days: number) => {
+    const date = new Date(currentDate.value);
+    date.setDate(date.getDate() + days);
+    currentDate.value = date.toISOString().split('T')[0];
+};
+
+const openCalendar = () => {
+    // Öffnet den nativen Datepicker des Inputs
+    if (dateInput.value) {
+        // showPicker() ist modern, fallback könnte click() sein
+        if ('showPicker' in HTMLInputElement.prototype) {
+             try {
+                dateInput.value.showPicker();
+             } catch (e) {
+                // Fallback für Browser die showPicker im Kontext nicht erlauben (z.B. Safari manchmal)
+                // In dem Fall machen wir den Input sichtbar(er) über CSS, aber hier versuchen wir es so.
+             }
+        } else {
+             dateInput.value.click();
+        }
+    }
+};
 
 // Zeitformatierung anpassen
 const formatTime = (dateString: string) => {
@@ -26,13 +65,37 @@ const deleteIntake = async (id: string) => {
 
 <template>
   <div class="daily-overview p-4 bg-white rounded shadow-md mt-4">
-    <h2 class="text-xl font-bold mb-2">Heute</h2>
-    <div class="text-gray-600 mb-4">
-      {{ count }} Einnahmen
+    <div class="flex justify-between items-center mb-4">
+        <button @click="changeDate(-1)" class="p-2 text-gray-500 hover:bg-gray-100 rounded-full">
+            &lt;
+        </button>
+        
+        <div class="relative cursor-pointer group" @click="openCalendar">
+            <h2 class="text-xl font-bold group-hover:text-primary transition-colors">{{ displayDate }}</h2>
+            <input 
+                ref="dateInput"
+                type="date" 
+                v-model="currentDate" 
+                class="absolute inset-0 opacity-0 cursor-pointer pointer-events-none"
+            >
+            <!-- Hinweis: pointer-events-none auf Input, damit der Klick auf DIV geht und wir showPicker() rufen können, 
+                 oder wir lassen es zu und machen input groß. 
+                 Aber schöner ist: Input versteckt, aber wir rufen showPicker().
+                 Korrektur: Damit showPicker geht, muss man interagieren.
+                 Alternative: Input komplett unsichtbar über dem Text legen. -->
+        </div>
+
+         <button @click="changeDate(1)" class="p-2 text-gray-500 hover:bg-gray-100 rounded-full">
+            &gt;
+        </button>
+    </div>
+    
+    <div class="text-gray-600 mb-4 text-center">
+      {{ filteredIntakes.length }} Einnahmen
     </div>
 
-    <ul v-if="todayIntakes.length > 0" class="space-y-2">
-      <li v-for="intake in todayIntakes" :key="intake.id" class="flex justify-between items-center bg-gray-50 p-2 rounded">
+    <ul v-if="filteredIntakes.length > 0" class="space-y-2">
+      <li v-for="intake in filteredIntakes" :key="intake.id" class="flex justify-between items-center bg-gray-50 p-2 rounded">
         <span class="font-medium">
              {{ intake.medName || intake.medId }}
         </span>
@@ -52,7 +115,7 @@ const deleteIntake = async (id: string) => {
       </li>
     </ul>
     <div v-else class="text-center text-gray-400 py-4">
-      Noch keine Einnahmen heute.
+      Keine Einnahmen an diesem Tag.
     </div>
   </div>
 </template>

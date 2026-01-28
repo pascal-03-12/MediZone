@@ -3,13 +3,16 @@ import { useNFC } from '../composables/useNFC';
 import DailyOverview from '../components/DailyOverview.vue';
 import { useMedicationStore } from '../stores/medication';
 import { storeToRefs } from 'pinia';
-import { onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import ManualIntakeDialog from '../components/ManualIntakeDialog.vue';
 
 const { isSupported, isScanning, error, startScan } = useNFC();
 const store = useMedicationStore();
 const { lastScannedMedication } = storeToRefs(store);
 const router = useRouter();
+
+const showManualDialog = ref(false);
 
 onMounted(() => {
   store.fetchLastScanned();
@@ -54,8 +57,20 @@ const openLastScanned = () => {
           <p class="text-sm text-gray-500 mt-2">(Kein Klick notwendig - funktioniert über Systembenachrichtigung)</p>
         </div>
       </div>
+
+      <button 
+        @click="showManualDialog = true"
+        class="mt-6 text-primary underline text-sm font-medium hover:text-blue-700"
+      >
+        Ohne Scan eintragen
+      </button>
     </div>
 
     <DailyOverview/>
+
+    <ManualIntakeDialog 
+      :is-open="showManualDialog" 
+      @close="showManualDialog = false"
+    />
   </main>
 </template>

@@ -61,12 +61,17 @@ export const useIntakeStore = defineStore('intake', () => {
         }
     };
 
+    const getIntakesForDate = (dateString: string) => { // Expects YYYY-MM-DD
+        return intakes.value.filter(intake => intake.date && intake.date.startsWith(dateString));
+    };
+
     return {
         intakes,
         addIntake,
         deleteIntake,
         fetchIntakes,
         getTodayIntakes,
+        getIntakesForDate,
         dailyCount
     };
 });
