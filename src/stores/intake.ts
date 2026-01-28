@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { doc, setDoc, collection, query, where, getDocs } from 'firebase/firestore'; 
+import { doc, setDoc, deleteDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import { useAuthStore } from './auth';
 import type { IntakeEntry } from '../types/types';
@@ -19,11 +19,11 @@ export const useIntakeStore = defineStore('intake', () => {
             );
 
             const querySnapshot = await getDocs(q);
-            
+
             intakes.value = querySnapshot.docs.map(doc => {
                 return doc.data() as IntakeEntry;
             });
-            
+
             console.log("Einnahmen geladen:", intakes.value);
         } catch (error) {
             console.error("Fehler beim Laden der Einnahmen:", error);
@@ -51,10 +51,21 @@ export const useIntakeStore = defineStore('intake', () => {
 
     const dailyCount = () => getTodayIntakes().length;
 
+    const deleteIntake = async (id: string) => {
+        try {
+            await deleteDoc(doc(db, 'intakes', id));
+            intakes.value = intakes.value.filter(intake => intake.id !== id);
+            console.log("Einnahme gelöscht:", id);
+        } catch (error) {
+            console.error("Fehler beim Löschen der Einnahme:", error);
+        }
+    };
+
     return {
         intakes,
         addIntake,
-        fetchIntakes, 
+        deleteIntake,
+        fetchIntakes,
         getTodayIntakes,
         dailyCount
     };
