@@ -33,6 +33,7 @@ export type IntakeEntry = {
     dose: number;
     doseUnit: string;
     note?: string;
+    withFood?: boolean;
 };
 
 export type Reminder = {

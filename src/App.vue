@@ -3,6 +3,7 @@ import { onMounted } from 'vue';
 import { useAuthStore } from './stores/auth';
 import { useReminderStore } from './stores/reminder';
 import { RouterLink, RouterView } from 'vue-router'; 
+import StreakBadge from './components/StreakBadge.vue';
 
 const authStore = useAuthStore();
 const reminderStore = useReminderStore();
@@ -44,6 +45,8 @@ onMounted(() => {
           </svg>
           Kalender
         </RouterLink>
+
+        <StreakBadge />
       </nav>
 
       <button 
