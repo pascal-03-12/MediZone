@@ -11,6 +11,7 @@ const router = useRouter();
 const medStore = useMedicationStore();
 const intakeStore = useIntakeStore();
 const reminderStore = useReminderStore();
+
 const withFood = ref(false);
 const medId = route.params.id as string;
 const newReminderTime = ref('');
@@ -28,7 +29,6 @@ const logIntake = async () => {
     nowIso,
   });
 
-  // Mindestabstand: hart blocken
   if (rules.tooSoon) {
     alert(
         `Zu früh: Bitte warte noch ca. ${rules.minutesLeft} Minuten, bevor du dieses Medikament wieder nimmst.`
@@ -36,7 +36,6 @@ const logIntake = async () => {
     return;
   }
 
-  // Tageslimit: warnen + optional trotzdem loggen
   if (rules.exceedsMax) {
     const ok = confirm(
         `Warnung: Tageslimit überschritten!\n` +
@@ -67,15 +66,15 @@ const logIntake = async () => {
 };
 
 const addReminder = () => {
-    if(!newReminderTime.value) return;
-    reminderStore.addReminder(medId, newReminderTime.value);
-    newReminderTime.value = '';
+  if (!newReminderTime.value) return;
+  reminderStore.addReminder(medId, newReminderTime.value);
+  newReminderTime.value = '';
 };
 
 onMounted(async () => {
   if (medId) {
     reminderStore.initReminders();
-    
+
     const med = await medStore.fetchMedicationById(medId);
     if (med) {
       medStore.setLastScanned(med);
@@ -85,117 +84,165 @@ onMounted(async () => {
 </script>
 
 <template>
-  <main class="p-6 max-w-xl mx-auto pb-20">
-    
-    <div v-if="medStore.loading" class="text-center p-8 text-gray-600">
-      <p>Lade Medikamenten-Daten...</p>
+  <main class="p-6 max-w-xl mx-auto pb-24">
+
+    <!-- Loading -->
+    <div
+        v-if="medStore.loading"
+        class="flex flex-col items-center justify-center py-16 text-primary"
+    >
+      <div class="animate-pulse text-lg font-semibold">
+        Medikament wird geladen…
+      </div>
     </div>
 
-    <div v-else-if="medStore.error" class="text-center text-red-500">
-      <h2 class="text-2xl font-bold mb-4">Hoppla!</h2>
-      <p class="mb-4">{{ medStore.error }}</p>
-      <button 
-        @click="router.push('/')"
-        class="px-6 py-3 bg-gray-100 text-gray-800 border-none rounded-lg font-bold cursor-pointer hover:bg-gray-200 transition-colors"
+    <!-- Error / Unknown -->
+    <div
+        v-else-if="medStore.error"
+        class="bg-white rounded-2xl shadow-soft p-8 text-center border border-borderSoft"
+    >
+      <h2 class="text-xl font-bold text-danger mb-2">
+        Unbekanntes Medikament
+      </h2>
+      <p class="text-textMuted mb-6">
+        Dieses Medikament ist noch nicht in deiner MediZone hinterlegt.
+      </p>
+
+      <button
+          @click="router.push('/')"
+          class="px-6 py-3 bg-primary text-white rounded-xl font-semibold hover:bg-primaryHover transition"
       >
         Zurück zum Dashboard
       </button>
     </div>
 
-    <div v-else-if="medStore.currentMedication" class="bg-white rounded-xl p-8 shadow-lg">
-      <header class="flex justify-between items-center mb-8">
-        <h1 class="m-0 text-2xl font-bold text-gray-800">{{ medStore.currentMedication.name }}</h1>
-        <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm">
+    <!-- Details -->
+    <div
+        v-else-if="medStore.currentMedication"
+        class="bg-white rounded-2xl p-8 shadow-soft border border-borderSoft"
+    >
+      <header class="flex justify-between items-start mb-8 gap-4">
+        <div>
+          <h1 class="text-2xl font-bold text-textMain leading-tight">
+            {{ medStore.currentMedication.name }}
+          </h1>
+          <p class="text-sm text-textMuted mt-1">
+            {{ medStore.currentMedication.substance }}
+          </p>
+        </div>
+
+        <span class="bg-primarySoft text-primaryDark px-3 py-1 rounded-full text-sm font-semibold">
           {{ medStore.currentMedication.dosageForm }}
         </span>
       </header>
 
-      <section class="grid grid-cols-2 gap-6 mb-8">
-        <div>
-          <label class="block text-sm text-gray-500 mb-1">Wirkstoff</label>
-          <p class="m-0 font-medium text-lg">{{ medStore.currentMedication.substance }}</p>
+      <section class="grid grid-cols-2 gap-4 mb-8">
+        <div class="bg-surface rounded-xl p-4">
+          <p class="text-xs text-textMuted mb-1">Standarddosis</p>
+          <p class="text-lg font-semibold">
+            {{ medStore.currentMedication.standardDose }}
+            {{ medStore.currentMedication.doseUnit }}
+          </p>
         </div>
-        <div>
-          <label class="block text-sm text-gray-500 mb-1">Dosierung</label>
-          <p class="m-0 font-medium text-lg">{{ medStore.currentMedication.standardDose }} {{ medStore.currentMedication.doseUnit }}</p>
+
+        <div class="bg-surface rounded-xl p-4">
+          <p class="text-xs text-textMuted mb-1">Max. pro Tag</p>
+          <p class="text-lg font-semibold">
+            {{ medStore.currentMedication.maxPerDay }}
+            {{ medStore.currentMedication.doseUnit }}
+          </p>
         </div>
-        <div class="col-span-2">
-          <label class="block text-sm text-gray-500 mb-1">Anweisung</label>
-          <p class="m-0 font-medium text-lg">{{ medStore.currentMedication.instructions }}</p>
+
+        <div class="col-span-2 bg-surface rounded-xl p-4">
+          <p class="text-xs text-textMuted mb-1">Anweisung</p>
+          <p class="text-base">
+            {{ medStore.currentMedication.instructions }}
+          </p>
         </div>
       </section>
 
-      <section class="mb-8 border-t pt-6 border-gray-100">
-        <h3 class="font-bold text-lg mb-4 text-gray-800 flex items-center gap-2">
-            ⏰ Erinnerungen
+      <section class="mb-8 border-t pt-6 border-borderSoft">
+        <h3 class="font-bold text-lg mb-4 text-textMain flex items-center gap-2">
+          ⏰ Erinnerungen
         </h3>
-        
+
         <div class="space-y-3 mb-4">
-            <div 
-                v-for="reminder in reminderStore.getRemindersByMedId(medId)" 
-                :key="reminder.id"
-                class="flex items-center justify-between bg-gray-50 p-3 rounded-lg border border-gray-100"
+          <div
+              v-for="reminder in reminderStore.getRemindersByMedId(medId)"
+              :key="reminder.id"
+              class="flex items-center justify-between bg-surface p-3 rounded-xl border border-borderSoft"
+          >
+            <div class="flex items-center gap-3">
+              <input
+                  type="checkbox"
+                  :checked="reminder.enabled"
+                  @change="reminderStore.toggleReminder(reminder.id)"
+                  class="w-5 h-5 text-primary rounded focus:ring-primary cursor-pointer"
+              />
+              <span
+                  :class="{ 'text-textMuted line-through': !reminder.enabled }"
+                  class="font-mono text-lg font-medium text-textMain"
+              >
+                {{ reminder.time }} Uhr
+              </span>
+            </div>
+            <button
+                @click="reminderStore.removeReminder(reminder.id)"
+                class="text-danger hover:opacity-80 text-sm font-medium px-2 py-1 cursor-pointer"
             >
-                <div class="flex items-center gap-3">
-                    <input 
-                        type="checkbox" 
-                        :checked="reminder.enabled" 
-                        @change="reminderStore.toggleReminder(reminder.id)"
-                        class="w-5 h-5 text-primary rounded focus:ring-primary cursor-pointer"
-                    />
-                    <span :class="{'text-gray-400 line-through': !reminder.enabled}" class="font-mono text-lg font-medium">
-                        {{ reminder.time }} Uhr
-                    </span>
-                </div>
-                <button 
-                    @click="reminderStore.removeReminder(reminder.id)"
-                    class="text-red-400 hover:text-red-600 text-sm font-medium px-2 py-1 cursor-pointer"
-                >
-                    Löschen
-                </button>
-            </div>
-            <div v-if="reminderStore.getRemindersByMedId(medId).length === 0" class="text-sm text-gray-400 italic">
-                Keine Erinnerungen gesetzt.
-            </div>
+              Löschen
+            </button>
+          </div>
+
+          <div
+              v-if="reminderStore.getRemindersByMedId(medId).length === 0"
+              class="text-sm text-textMuted italic"
+          >
+            Keine Erinnerungen gesetzt.
+          </div>
         </div>
 
         <div class="flex gap-2">
-            <input 
-                type="time" 
-                v-model="newReminderTime"
-                class="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-primary font-mono text-lg"
-            />
-            <button 
-                @click="addReminder"
-                class="bg-secondary text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-600 transition-colors text-xl cursor-pointer"
-            >
-                +
-            </button>
+          <input
+              type="time"
+              v-model="newReminderTime"
+              class="flex-1 p-2 border border-borderSoft rounded-xl focus:outline-none focus:border-primary font-mono text-lg bg-white"
+          />
+          <button
+              @click="addReminder"
+              class="bg-primary text-white px-6 py-2 rounded-xl font-bold hover:bg-primaryHover transition-colors text-xl cursor-pointer"
+          >
+            +
+          </button>
         </div>
       </section>
-      <section class="mb-4">
-        <label class="flex items-center gap-3 text-gray-700 cursor-pointer select-none">
+
+      <section class="mb-6 bg-primarySoft rounded-xl p-4">
+        <label class="flex items-center gap-3 cursor-pointer">
           <input
               type="checkbox"
               v-model="withFood"
               class="w-5 h-5 text-primary rounded focus:ring-primary cursor-pointer"
           />
-          <span class="font-medium">Einnahme mit Essen</span>
+          <span class="font-medium text-primaryDark">
+            Einnahme mit Essen
+          </span>
         </label>
-        <p class="text-xs text-gray-500 mt-1">
+        <p class="text-xs text-primaryDark/70 mt-1">
           Wird im Einnahmeprotokoll gespeichert.
         </p>
       </section>
-      <div class="flex gap-4">
-        <button 
-          @click="logIntake"
-          class="flex-1 py-3 bg-primary text-white border-none rounded-lg font-bold cursor-pointer hover:bg-primary-hover transition-colors"
+
+      <div class="flex gap-3">
+        <button
+            @click="logIntake"
+            class="flex-1 py-4 bg-primary text-white rounded-2xl font-semibold shadow-lg hover:bg-primaryHover transition"
         >
           Einnahme loggen
         </button>
-        <button 
-          @click="router.push('/')"
-          class="flex-1 py-3 bg-gray-100 text-gray-800 border-none rounded-lg font-bold cursor-pointer hover:bg-gray-200 transition-colors"
+        <button
+            @click="router.push('/')"
+            class="flex-1 py-4 bg-surface border border-borderSoft rounded-2xl font-semibold text-textMuted hover:bg-white transition"
         >
           Zurück
         </button>
