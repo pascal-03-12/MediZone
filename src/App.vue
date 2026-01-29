@@ -35,6 +35,10 @@ onMounted(() => {
           v-if="authStore.user"
           class="p-4 bg-white shadow-sm flex justify-between items-center sticky top-0 z-50"
       >
+        <div class="fixed top-20 right-4 z-50 md:hidden">
+          <StreakBadge />
+        </div>
+
         <div class="font-bold text-primary text-xl tracking-tight">
           MediZone
         </div>
