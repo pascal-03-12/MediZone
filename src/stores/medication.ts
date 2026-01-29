@@ -56,6 +56,9 @@ export const useMedicationStore = defineStore('medication', () => {
     const authStore = useAuthStore();
     if (!authStore.user?.uid) return;
 
+    // Explizit zurücksetzen - wichtig für neue Registrierungen
+    lastScannedMedication.value = null;
+
     try {
       const userRef = doc(db, 'users', authStore.user.uid);
       const userSnap = await getDoc(userRef);

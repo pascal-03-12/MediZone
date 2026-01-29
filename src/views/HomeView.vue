@@ -3,7 +3,7 @@ import { useNFC } from '../composables/useNFC';
 // DailyOverview Import ENTFERNT
 import { useMedicationStore } from '../stores/medication';
 import { storeToRefs } from 'pinia';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import ManualIntakeDialog from '../components/ManualIntakeDialog.vue';
 
@@ -13,6 +13,11 @@ const { lastScannedMedication } = storeToRefs(store);
 const router = useRouter();
 
 const showManualDialog = ref(false);
+
+// iOS Detection - zeige passiven Scan Hinweis nur auf iOS
+const isIOS = computed(() => {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent);
+});
 
 onMounted(() => {
   store.fetchLastScanned();
@@ -60,10 +65,17 @@ const openLastScanned = () => {
         <p v-if="error" class="text-danger mt-4">{{ error }}</p>
       </div>
 
-      <div v-else class="passive-scan">
+      <div v-else-if="isIOS" class="passive-scan">
         <div class="bg-white p-8 rounded-2xl border border-dashed border-borderSoft mt-8 shadow-soft">
           <h3 class="text-xl font-semibold text-textMain mb-2">Bereit zum Scannen</h3>
           <p class="text-textMuted">Halte dein iPhone an den Tag.</p>
+        </div>
+      </div>
+
+      <div v-else class="desktop-info">
+        <div class="bg-surface p-8 rounded-2xl border border-borderSoft mt-8 shadow-soft">
+          <h3 class="text-xl font-semibold text-textMain mb-2">NFC nicht verfügbar</h3>
+          <p class="text-textMuted">NFC-Scan ist nur auf mobilen Geräten möglich.</p>
         </div>
       </div>
 
