@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import CalendarOverview from '../components/CalendarOverview.vue';import { useIntakeStore } from '../stores/intake';
+import { useIntakeStore } from '../stores/intake';
 import { storeToRefs } from 'pinia';
 import { useRouter } from 'vue-router';
 
