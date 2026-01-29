@@ -108,7 +108,6 @@ const filteredIntakes = computed(() => {
 });
 
 const displayDateDetails = computed(() => {
-    const d = new Date(selectedDate.value);
     const today = formatDateISO(new Date());
     
 
