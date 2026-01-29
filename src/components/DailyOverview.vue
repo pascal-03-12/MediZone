@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'; 
 import { useIntakeStore } from '../stores/intake';
+import { useMedicationStore } from '../stores/medication'; //
 
 const intakeStore = useIntakeStore();
+const medicationStore = useMedicationStore();
 
 onMounted(() => {
   intakeStore.fetchIntakes();
+  medicationStore.fetchAllMedications(); // Auch Medikamente laden für Details
 });
 
 const viewDate = ref(new Date()); 
@@ -19,6 +22,26 @@ const getLocalISODate = (date: Date) => {
 
 const selectedDate = ref(getLocalISODate(new Date()));
 
+// -- HELPER FÜR MEDIKAMENTEN-DETAILS --
+const getMedDetails = (medId: string) => {
+    return medicationStore.allMedications.find(m => m.id === medId);
+};
+
+const formTranslations: Record<string, string> = {
+    tablet: 'Tablette',
+    capsule: 'Kapsel',
+    drops: 'Tropfen',
+    spray: 'Spray',
+    injection: 'Injektion',
+    cream: 'Creme',
+    other: 'Andere'
+};
+
+const translateForm = (form?: string) => {
+    if (!form) return '';
+    return formTranslations[form] || form;
+};
+
 // -- KALENDER LOGIK --
 const weekDays = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
 
@@ -26,7 +49,6 @@ const monthTitle = computed(() => {
   return viewDate.value.toLocaleString('de-DE', { month: 'long', year: 'numeric' });
 });
 
-// KORRIGIERTE FUNKTION: Nutzt lokale Zeit statt UTC
 const formatDateISO = (date: Date) => getLocalISODate(date);
 
 const calendarDays = computed(() => {
@@ -61,10 +83,9 @@ const calendarDays = computed(() => {
     });
   }
 
-  // Auffülltage danach (um Grid zu füllen)
-  const remainingDays = 42 - days.length; // 6 Reihen à 7 Tage = 42
-  if (remainingDays > 0 && remainingDays < 7) { // Optional: nur Woche füllen oder festes Grid
-     // Wir füllen nur die angefangene Woche auf, sieht meist besser aus als starre 6 Reihen
+  // Auffülltage danach
+  const remainingDays = 42 - days.length;
+  if (remainingDays > 0 && remainingDays < 7) { 
      const daysToFill = 7 - (days.length % 7);
      if (daysToFill < 7) {
         for (let i = 1; i <= daysToFill; i++) {
@@ -109,8 +130,6 @@ const filteredIntakes = computed(() => {
 
 const displayDateDetails = computed(() => {
     const today = formatDateISO(new Date());
-    
-
     const displayDateObj = new Date(selectedDate.value + 'T12:00:00');
 
     if (selectedDate.value === today) return 'Heute';
@@ -177,18 +196,32 @@ const deleteIntake = async (id: string) => {
             {{ displayDateDetails }}
         </h3>
 
-        <ul v-if="filteredIntakes.length > 0" class="space-y-2">
+        <ul v-if="filteredIntakes.length > 0" class="space-y-3">
             <li 
                 v-for="intake in filteredIntakes" 
                 :key="intake.id" 
-                class="flex justify-between items-center bg-white p-3 rounded-lg shadow-sm border border-gray-100"
+                class="flex justify-between items-start bg-white p-3 rounded-lg shadow-sm border border-gray-100"
             >
                 <div>
                     <span class="font-bold text-gray-800 block">{{ intake.medName || 'Unbekannt' }}</span>
-                    <span class="text-xs text-gray-500">{{ intake.dose }} {{ intake.doseUnit }}</span>
+                    <div class="text-xs text-gray-500 mt-1 space-y-0.5">
+                        <p>{{ intake.dose }} {{ intake.doseUnit }}</p>
+                        
+                        <p v-if="getMedDetails(intake.medId)?.substance">
+                            <span class="font-medium text-gray-400">Wirkstoff:</span> {{ getMedDetails(intake.medId)?.substance }}
+                        </p>
+                        
+                        <p v-if="getMedDetails(intake.medId)?.dosageForm">
+                            <span class="font-medium text-gray-400">Form:</span> {{ translateForm(getMedDetails(intake.medId)?.dosageForm) }}
+                        </p>
+
+                        <p>
+                            <span class="font-medium text-gray-400">Mit Essen:</span> {{ intake.withFood ? 'Ja' : 'Nein' }}
+                        </p>
+                    </div>
                 </div>
                 
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 mt-1">
                     <span class="text-sm font-mono text-gray-600 bg-gray-100 px-2 py-1 rounded">
                         {{ formatTime(intake.date) }}
                     </span>

@@ -20,6 +20,9 @@ const selectedMedId = ref('');
 const intakeDate = ref(new Date().toISOString().slice(0, 16)); // YYYY-MM-DDTHH:mm
 const isSubmitting = ref(false);
 
+// Neues Ref für "Mit Essen"
+const withFood = ref(false);
+
 // Form for new medication
 const newMedName = ref('');
 const newMedSubstance = ref('');
@@ -46,6 +49,7 @@ const resetForm = () => {
     newMedSubstance.value = '';
     newMedDose.value = null;
     activeTab.value = 'select';
+    withFood.value = false; // Zurücksetzen
 };
 
 const saveIntake = async () => {
@@ -82,7 +86,8 @@ const saveIntake = async () => {
             medName: medToLog.name,
             date: intakeDate.value,
             dose: medToLog.standardDose,
-            doseUnit: medToLog.doseUnit
+            doseUnit: medToLog.doseUnit,
+            withFood: withFood.value // Hier wird der Wert gespeichert
         });
 
         close();
@@ -157,6 +162,19 @@ const saveIntake = async () => {
         <div class="mt-6 space-y-2">
              <label class="text-sm font-medium text-gray-700 block">Zeitpunkt der Einnahme</label>
              <input type="datetime-local" v-model="intakeDate" class="w-full p-3 border rounded-lg text-gray-600">
+        </div>
+
+        <div class="mt-4 bg-blue-50 p-3 rounded-lg border border-blue-100">
+            <label class="flex items-center gap-3 cursor-pointer">
+                <input 
+                    type="checkbox" 
+                    v-model="withFood" 
+                    class="w-5 h-5 text-primary rounded focus:ring-primary cursor-pointer"
+                />
+                <span class="text-gray-800 font-medium">
+                    Einnahme mit Essen
+                </span>
+            </label>
         </div>
 
         <div class="flex gap-3 mt-8">
