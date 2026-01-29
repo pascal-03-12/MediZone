@@ -1,10 +1,10 @@
 
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { 
-  createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword, 
-  signOut, 
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
   onAuthStateChanged,
   type User
 } from 'firebase/auth';
@@ -19,8 +19,15 @@ export const useAuthStore = defineStore('auth', () => {
   const isAuthenticated = computed(() => !!user.value);
 
   const initAuth = () => {
-    onAuthStateChanged(auth, (currentUser) => {
+    onAuthStateChanged(auth, async (currentUser) => {
       user.value = currentUser;
+
+      if (currentUser) {
+        const { useIntakeStore } = await import('./intake');
+        const intakeStore = useIntakeStore();
+        await intakeStore.fetchIntakes();
+      }
+
       loading.value = false;
       if (!currentUser && router.currentRoute.value.meta.requiresAuth) {
         router.push('/login');
@@ -37,7 +44,7 @@ export const useAuthStore = defineStore('auth', () => {
     } catch (err: any) {
       error.value = err.message;
     } finally {
-        loading.value = false;
+      loading.value = false;
     }
   };
 
@@ -48,9 +55,9 @@ export const useAuthStore = defineStore('auth', () => {
       await signInWithEmailAndPassword(auth, email, password);
       router.push('/');
     } catch (err: any) {
-       error.value = err.message;
+      error.value = err.message;
     } finally {
-        loading.value = false;
+      loading.value = false;
     }
   };
 
