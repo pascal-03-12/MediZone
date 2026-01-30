@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { useMedicationStore } from '../stores/medication';
 import { useIntakeStore } from '../stores/intake';
+import { useNFC } from '../composables/useNFC'; // NEU: Import
 import { storeToRefs } from 'pinia';
 import type { Medication } from '../types/types';
 
@@ -15,15 +16,20 @@ const medicationStore = useMedicationStore();
 const intakeStore = useIntakeStore();
 const { allMedications, loading } = storeToRefs(medicationStore);
 
+// NEU: NFC Composable
+const { writeTag, isSupported: nfcSupported } = useNFC();
+
 const activeTab = ref<'select' | 'create'>('select');
 const selectedMedId = ref('');
-const intakeDate = ref(new Date().toISOString().slice(0, 16)); // YYYY-MM-DDTHH:mm
+const intakeDate = ref(new Date().toISOString().slice(0, 16));
 const isSubmitting = ref(false);
 
-// Neues Ref für "Mit Essen"
 const withFood = ref(false);
 
-// Form for new medication
+// NEU: Checkbox State für NFC
+const createNfcTag = ref(false);
+
+// Form data
 const newMedName = ref('');
 const newMedSubstance = ref('');
 const newMedDose = ref<number | null>(null);
@@ -49,7 +55,8 @@ const resetForm = () => {
     newMedSubstance.value = '';
     newMedDose.value = null;
     activeTab.value = 'select';
-    withFood.value = false; // Zurücksetzen
+    withFood.value = false;
+    createNfcTag.value = false; // Reset
 };
 
 const saveIntake = async () => {
@@ -62,7 +69,7 @@ const saveIntake = async () => {
         let medToLog: Medication | undefined;
         
         if (activeTab.value === 'create') {
-            // Erst Medikament erstellen
+            // 1. Medikament erstellen
             medToLog = await medicationStore.addCustomMedication({
                 name: newMedName.value,
                 substance: newMedSubstance.value,
@@ -79,7 +86,7 @@ const saveIntake = async () => {
 
         if (!medToLog) throw new Error("Medikament nicht gefunden");
 
-        // Einnahme loggen
+        // 2. Einnahme loggen
         await intakeStore.addIntake({
             id: Date.now().toString(),
             medId: medToLog.id,
@@ -87,8 +94,14 @@ const saveIntake = async () => {
             date: intakeDate.value,
             dose: medToLog.standardDose,
             doseUnit: medToLog.doseUnit,
-            withFood: withFood.value // Hier wird der Wert gespeichert
+            withFood: withFood.value
         });
+
+        // 3. NEU: Auf NFC Tag schreiben (nur wenn "Neu anlegen" und Checkbox aktiv)
+        if (activeTab.value === 'create' && createNfcTag.value && nfcSupported) {
+            // Wir warten hier auf das Schreiben (Android Overlay öffnet sich)
+            await writeTag(`/medication/${medToLog.id}`);
+        }
 
         close();
     } catch (e) {
@@ -154,6 +167,25 @@ const saveIntake = async () => {
                      <option value="other">Andere</option>
                 </select>
             </div>
+            
+            <div v-if="nfcSupported" class="bg-gray-100 p-3 rounded-lg border border-gray-200 mt-2">
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input 
+                        type="checkbox" 
+                        v-model="createNfcTag" 
+                        class="w-5 h-5 text-primary rounded focus:ring-primary cursor-pointer"
+                    />
+                    <div class="flex flex-col">
+                        <span class="text-gray-800 font-medium text-sm">
+                            Direkt auf NFC-Tag speichern
+                        </span>
+                        <span class="text-xs text-gray-500">
+                            Halte nach dem Speichern den Tag bereit.
+                        </span>
+                    </div>
+                </label>
+            </div>
+
             <p class="text-xs text-blue-600 bg-blue-50 p-2 rounded">
                 Dieses Medikament wird nur für DICH sichtbar gespeichert.
             </p>
@@ -186,7 +218,12 @@ const saveIntake = async () => {
                 :disabled="isSubmitting || (activeTab === 'select' && !selectedMedId) || (activeTab === 'create' && !newMedName)"
                 class="flex-1 py-3 text-white bg-primary rounded-lg font-bold shadow-lg hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-                {{ isSubmitting ? 'Speichere...' : 'Speichern' }}
+                <span v-if="isSubmitting">
+                    {{ (activeTab === 'create' && createNfcTag) ? 'Warte auf NFC...' : 'Speichere...' }}
+                </span>
+                <span v-else>
+                    {{ (activeTab === 'create' && createNfcTag) ? 'Speichern & Scannen' : 'Speichern' }}
+                </span>
             </button>
         </div>
       </div>

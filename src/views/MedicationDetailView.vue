@@ -4,7 +4,6 @@ import { useRoute, useRouter } from 'vue-router';
 import { useMedicationStore } from '../stores/medication';
 import { useIntakeStore } from '../stores/intake';
 import { useReminderStore } from '../stores/reminder';
-import { useNFC } from '../composables/useNFC'; // Import useNFC
 import type { IntakeEntry } from '../types/types';
 
 const route = useRoute();
@@ -12,9 +11,6 @@ const router = useRouter();
 const medStore = useMedicationStore();
 const intakeStore = useIntakeStore();
 const reminderStore = useReminderStore();
-
-// NFC Composable initialisieren
-const { writeTag, isWriting, isSupported: nfcSupported } = useNFC();
 
 const withFood = ref(false);
 const medId = route.params.id as string;
@@ -248,27 +244,7 @@ onMounted(async () => {
           Zurück
         </button>
       </div>
-      
-      <section v-if="nfcSupported" class="mt-8 pt-6 border-t border-borderSoft text-center">
-        <h3 class="text-sm font-semibold text-textMuted uppercase tracking-wider mb-3">
-          Verknüpfung
-        </h3>
-        
-        <button
-            @click="writeTag(`/medication/${medId}`)"
-            :disabled="isWriting"
-            class="w-full py-3 px-4 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition flex items-center justify-center gap-2"
-        >
-          <span v-if="isWriting" class="animate-spin">🔄</span>
-          <span v-else>📡</span>
-          {{ isWriting ? 'Halte Tag an Handy...' : 'Auf NFC-Tag speichern' }}
-        </button>
-        <p class="text-xs text-textMuted mt-2">
-            Schreibt einen Link zu diesem Medikament auf einen NFC-Tag.
-        </p>
-      </section>
 
     </div>
-
   </main>
 </template>
