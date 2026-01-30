@@ -7,7 +7,7 @@ import { onMounted, ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import ManualIntakeDialog from '../components/ManualIntakeDialog.vue';
 
-const { isSupported, isScanning, error, startScan } = useNFC();
+const { isSupported, isScanning, error, startScan, stopScan } = useNFC();
 const store = useMedicationStore();
 const { lastScannedMedication } = storeToRefs(store);
 const router = useRouter();
@@ -54,14 +54,29 @@ const openLastScanned = () => {
       </div>
 
       <div v-if="isSupported" class="active-scan">
-        <button
-            @click="startScan"
-            :disabled="isScanning"
-            class="bg-primary text-white border-none px-8 py-4 text-xl rounded-2xl cursor-pointer shadow-lg
-                 hover:bg-primaryHover transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
-        >
-          {{ isScanning ? 'Scanne...' : 'Scan starten' }}
-        </button>
+        <div class="flex flex-col items-center gap-4">
+          <button
+              v-if="!isScanning"
+              @click="startScan"
+              class="bg-primary text-white border-none px-8 py-4 text-xl rounded-2xl cursor-pointer shadow-lg
+                   hover:bg-primaryHover transition-colors"
+          >
+            Scan starten
+          </button>
+          <div v-else class="flex flex-col items-center gap-4">
+            <div class="flex items-center gap-3">
+              <div class="animate-pulse w-4 h-4 bg-primary rounded-full"></div>
+              <span class="text-lg font-medium text-textMain">Scanne...</span>
+            </div>
+            <button
+                @click="stopScan"
+                class="px-6 py-3 bg-white border border-danger text-danger rounded-xl font-medium
+                     hover:bg-red-50 transition-colors"
+            >
+              Abbrechen
+            </button>
+          </div>
+        </div>
         <p v-if="error" class="text-danger mt-4">{{ error }}</p>
       </div>
 

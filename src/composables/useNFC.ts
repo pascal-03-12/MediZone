@@ -5,11 +5,14 @@ import { useMedicationStore } from '../stores/medication';
 export function useNFC() {
   // Sicherer Check: Prüfen, ob wir im Browser sind UND ob NDEFReader existiert
   const isSupported = typeof window !== 'undefined' && 'NDEFReader' in window;
-  
+
   const isScanning = ref(false);
   const isWriting = ref(false);
   const error = ref<string | null>(null);
   const router = useRouter();
+
+  // AbortController für das Abbrechen des Scans (Android)
+  let scanAbortController: AbortController | null = null;
 
   const startScan = async () => {
     // Wenn nicht unterstützt (z.B. am PC), sofort abbrechen
@@ -19,8 +22,11 @@ export function useNFC() {
       // Zugriff über (window as any) verhindert Abstürze auf Desktop-Browsern
       const NDEFReader = (window as any).NDEFReader;
       const ndef = new NDEFReader();
-      
-      await ndef.scan();
+
+      // AbortController erstellen für späteres Abbrechen
+      scanAbortController = new AbortController();
+
+      await ndef.scan({ signal: scanAbortController.signal });
       isScanning.value = true;
       error.value = null;
 
@@ -41,8 +47,23 @@ export function useNFC() {
       };
     } catch (err: any) {
       isScanning.value = false;
-      error.value = "Scan fehlgeschlagen: " + err.message;
+      scanAbortController = null;
+      // Abbruch durch User ist kein Fehler
+      if (err.name === 'AbortError') {
+        error.value = null;
+      } else {
+        error.value = "Scan fehlgeschlagen: " + err.message;
+      }
     }
+  };
+
+  const stopScan = () => {
+    if (scanAbortController) {
+      scanAbortController.abort();
+      scanAbortController = null;
+    }
+    isScanning.value = false;
+    error.value = null;
   };
 
   const handleUrlScan = async (url: string) => {
@@ -80,7 +101,7 @@ export function useNFC() {
       // Auch hier: Sicherer Zugriff
       const NDEFReader = (window as any).NDEFReader;
       const ndef = new NDEFReader();
-      
+
       const fullUrl = window.location.origin + path;
 
       await ndef.write({
@@ -96,5 +117,5 @@ export function useNFC() {
     }
   };
 
-  return { isSupported, isScanning, isWriting, error, startScan, writeTag };
+  return { isSupported, isScanning, isWriting, error, startScan, stopScan, writeTag };
 }

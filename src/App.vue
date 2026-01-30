@@ -1,16 +1,36 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { onMounted, onUnmounted } from 'vue';
 import { useAuthStore } from './stores/auth';
 import { useReminderStore } from './stores/reminder';
+import { useMedicationStore } from './stores/medication';
 import { RouterLink, RouterView } from 'vue-router';
 import StreakBadge from './components/StreakBadge.vue';
 
 const authStore = useAuthStore();
 const reminderStore = useReminderStore();
+const medicationStore = useMedicationStore();
+
+// Handler für Online-Event
+const handleOnline = () => {
+  console.log('Online - starte Synchronisierung...');
+  medicationStore.syncPendingMedications();
+};
 
 onMounted(() => {
   authStore.initAuth();
   reminderStore.initReminders();
+  
+  // Bei App-Start: Versuche ausstehende Medikamente zu synchronisieren
+  if (navigator.onLine) {
+    medicationStore.syncPendingMedications();
+  }
+  
+  // Event-Listener für Online-Status
+  window.addEventListener('online', handleOnline);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('online', handleOnline);
 });
 </script>
 
