@@ -3,16 +3,23 @@ import { useRouter } from 'vue-router';
 import { useMedicationStore } from '../stores/medication';
 
 export function useNFC() {
-  const isSupported = 'NDEFReader' in window;
+  // Sicherer Check: Prüfen, ob wir im Browser sind UND ob NDEFReader existiert
+  const isSupported = typeof window !== 'undefined' && 'NDEFReader' in window;
+  
   const isScanning = ref(false);
+  const isWriting = ref(false);
   const error = ref<string | null>(null);
   const router = useRouter();
 
   const startScan = async () => {
+    // Wenn nicht unterstützt (z.B. am PC), sofort abbrechen
     if (!isSupported) return;
 
     try {
+      // Zugriff über (window as any) verhindert Abstürze auf Desktop-Browsern
+      const NDEFReader = (window as any).NDEFReader;
       const ndef = new NDEFReader();
+      
       await ndef.scan();
       isScanning.value = true;
       error.value = null;
@@ -44,7 +51,6 @@ export function useNFC() {
       const id = parts[parts.length - 1];
 
       if (id) {
-        // Fetch medication data to cache it
         const store = useMedicationStore();
         const medication = await store.fetchMedicationById(id);
 
@@ -60,5 +66,35 @@ export function useNFC() {
     }
   }
 
-  return { isSupported, isScanning, error, startScan };
+  const writeTag = async (path: string) => {
+    // Zusätzlicher Schutz: Auf PC gar nicht erst versuchen
+    if (!isSupported) {
+      error.value = "NFC wird von diesem Gerät nicht unterstützt.";
+      return;
+    }
+
+    try {
+      isWriting.value = true;
+      error.value = null;
+
+      // Auch hier: Sicherer Zugriff
+      const NDEFReader = (window as any).NDEFReader;
+      const ndef = new NDEFReader();
+      
+      const fullUrl = window.location.origin + path;
+
+      await ndef.write({
+        records: [{ recordType: "url", data: fullUrl }]
+      });
+
+      alert("Erfolgreich auf NFC-Tag geschrieben!");
+    } catch (err: any) {
+      console.error(err);
+      error.value = "Schreiben fehlgeschlagen: " + err.message;
+    } finally {
+      isWriting.value = false;
+    }
+  };
+
+  return { isSupported, isScanning, isWriting, error, startScan, writeTag };
 }

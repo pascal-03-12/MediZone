@@ -50,6 +50,7 @@ export const useIntakeStore = defineStore('intake', () => {
 
     const getTodayIntakes = () => {
         const todayPrefix = new Date().toISOString().split('T')[0];
+        // Sicherstellen, dass intake.date existiert
         return intakes.value.filter(intake => intake.date && intake.date.startsWith(todayPrefix));
     };
 
@@ -112,8 +113,6 @@ export const useIntakeStore = defineStore('intake', () => {
 
     const dailyCount = () => getTodayIntakes().length;
 
-    // --- NEUE LOGIK (Beide Seiten kombiniert) ---
-
     const deleteIntake = async (id: string) => {
         try {
             await deleteDoc(doc(db, 'intakes', id));
@@ -124,16 +123,20 @@ export const useIntakeStore = defineStore('intake', () => {
         }
     };
 
-    const getIntakesForDate = (dateString: string) => { // Expects YYYY-MM-DD
+    const getIntakesForDate = (dateString: string) => { 
         return intakes.value.filter(intake => intake.date && intake.date.startsWith(dateString));
     };
 
     const currentStreak = computed(() => {
         if (intakes.value.length === 0) return 0;
 
+        // --- FIX: Filtert Einträge ohne Datum raus, bevor map aufgerufen wird ---
+        const validIntakes = intakes.value.filter(entry => entry.date);
+        
         const uniqueDates = new Set(
-            intakes.value.map(entry => entry.date.split('T')[0])
+            validIntakes.map(entry => entry.date.split('T')[0])
         );
+        // -----------------------------------------------------------------------
 
         const sortedDates = Array.from(uniqueDates).sort().reverse();
 
@@ -146,7 +149,6 @@ export const useIntakeStore = defineStore('intake', () => {
         const todayStr = today.toISOString().split('T')[0];
         const yesterdayStr = yesterday.toISOString().split('T')[0];
 
-        // Kleine Korrektur: Variablen müssen deklariert sein
         if (sortedDates[0] !== todayStr && sortedDates[0] !== yesterdayStr) {
              return 0;
         }
