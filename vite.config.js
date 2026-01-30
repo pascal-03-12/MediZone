@@ -18,14 +18,16 @@ export default defineConfig({
                 theme_color: '#3498db',
                 icons: [
                     {
-                        src: 'pwa-192x192.png',
+                        src: 'android-192.png', // Das neue blaue Bild (Kopie)
                         sizes: '192x192',
-                        type: 'image/png'
+                        type: 'image/png',
+                        purpose: 'any maskable' // Wichtig für den Vollbild-Look ohne weißen Rand
                     },
                     {
-                        src: 'pwa-512x512.png',
+                        src: 'android-512.png', // Das neue blaue Bild (Original)
                         sizes: '512x512',
-                        type: 'image/png'
+                        type: 'image/png',
+                        purpose: 'any maskable' // Wichtig für den Vollbild-Look ohne weißen Rand
                     }
                 ]
             }
