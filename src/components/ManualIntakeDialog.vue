@@ -166,18 +166,18 @@ const saveIntake = async () => {
 <template>
   <div v-if="isOpen" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
     <div class="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
-      <div class="flex border-b">
+      <div class="flex border-b p-1 gap-1">
         <button 
             @click="activeTab = 'select'"
-            class="flex-1 py-3 font-medium text-sm transition-colors"
-            :class="activeTab === 'select' ? 'bg-primary text-white' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'"
+            class="flex-1 py-2 font-medium text-sm transition-all rounded-lg border"
+            :class="activeTab === 'select' ? 'bg-primary text-white border-primary shadow-sm' : 'bg-white text-gray-500 border-transparent hover:bg-gray-50'"
         >
             Aus Liste wählen
         </button>
         <button 
             @click="activeTab = 'create'"
-            class="flex-1 py-3 font-medium text-sm transition-colors"
-            :class="activeTab === 'create' ? 'bg-primary text-white' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'"
+            class="flex-1 py-2 font-medium text-sm transition-all rounded-lg border"
+            :class="activeTab === 'create' ? 'bg-primary text-white border-primary shadow-sm' : 'bg-white text-gray-500 border-transparent hover:bg-gray-50'"
         >
             Neu anlegen
         </button>
@@ -288,7 +288,11 @@ const saveIntake = async () => {
 
         <div class="mt-6 space-y-2">
              <label class="text-sm font-medium text-gray-700 block">Zeitpunkt der Einnahme</label>
-             <input type="datetime-local" v-model="intakeDate" class="w-full p-3 border rounded-lg text-gray-600">
+             <input 
+                 type="datetime-local" 
+                 v-model="intakeDate" 
+                 class="w-full p-3 border rounded-lg text-gray-600 bg-gray-100 shadow-sm appearance-none"
+             />
         </div>
 
         <div class="mt-4 bg-blue-50 p-3 rounded-lg border border-blue-100">
@@ -326,3 +330,14 @@ const saveIntake = async () => {
     </div>
   </div>
 </template>
+
+<style scoped>
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.7rem center;
+  background-size: 1.25em;
+  padding-right: 2rem;
+}
+</style>
