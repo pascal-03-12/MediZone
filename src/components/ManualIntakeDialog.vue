@@ -154,8 +154,8 @@ const saveIntake = async () => {
 
 <template>
   <div v-if="isOpen" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
-      <div class="flex border-b p-1 gap-1">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
+      <div class="flex border-b p-1 gap-1 flex-shrink-0 bg-white z-10">
         <button 
             @click="activeTab = 'select'"
             class="flex-1 py-2 font-medium text-sm transition-all rounded-lg border"
@@ -172,7 +172,7 @@ const saveIntake = async () => {
         </button>
       </div>
 
-      <div class="p-6">
+      <div class="p-6 overflow-y-auto">
         <div v-if="activeTab === 'select'" class="space-y-4">
             <h3 class="font-bold text-lg">Medikament wählen</h3>
             <div v-if="loading" class="text-center py-4 text-gray-400">Lade...</div>
@@ -193,7 +193,7 @@ const saveIntake = async () => {
             </div>
         </div>
 
-        <div v-else class="space-y-4 overflow-hidden">
+        <div v-else class="space-y-4">
             <h3 class="font-bold text-lg">Neues Medikament anlegen</h3>
             <div class="flex flex-col gap-3">
                 <div>
@@ -257,19 +257,6 @@ const saveIntake = async () => {
                 </label>
             </div>
 
-            <!-- Offline-Indikator -->
-            <div v-if="!isOnline" class="bg-amber-50 p-3 rounded-lg border border-amber-200 mt-2">
-                <div class="flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636a9 9 0 010 12.728m-2.829-2.829a5 5 0 010-7.07m-2.828 2.828a1 1 0 010 1.414" />
-                    </svg>
-                    <span class="text-amber-800 font-medium text-sm">Offline-Modus</span>
-                </div>
-                <p class="text-xs text-amber-700 mt-1">
-                    Das Medikament wird lokal gespeichert und bei Internetverbindung automatisch synchronisiert.
-                </p>
-            </div>
-
             <p class="text-xs text-blue-600 bg-blue-50 p-2 rounded">
                 Dieses Medikament wird nur für DICH sichtbar gespeichert.
             </p>
@@ -297,7 +284,7 @@ const saveIntake = async () => {
             </label>
         </div>
 
-        <div class="flex gap-3 mt-8">
+        <div class="flex gap-3 mt-8 pb-2">
             <button @click="close" class="flex-1 py-3 text-gray-600 bg-gray-100 rounded-lg font-medium hover:bg-gray-200">
                 Abbrechen
             </button>

@@ -10,7 +10,7 @@ const authStore = useAuthStore();
 const reminderStore = useReminderStore();
 const medicationStore = useMedicationStore();
 
-// Handler für Online-Event
+// Synchronisierung läuft unsichtbar im Hintergrund
 const handleOnline = () => {
   console.log('Online - starte Synchronisierung...');
   medicationStore.syncPendingMedications();
@@ -20,12 +20,10 @@ onMounted(() => {
   authStore.initAuth();
   reminderStore.initReminders();
   
-  // Bei App-Start: Versuche ausstehende Medikamente zu synchronisieren
   if (navigator.onLine) {
     medicationStore.syncPendingMedications();
   }
   
-  // Event-Listener für Online-Status
   window.addEventListener('online', handleOnline);
 });
 
@@ -45,7 +43,7 @@ onUnmounted(() => {
   </div>
 
   <template v-else>
-    <div class="min-h-screen bg-surface text-textMain">
+    <div class="min-h-screen bg-surface text-textMain pb-32 md:pb-0">
 
       <header
           v-if="authStore.user"
@@ -142,14 +140,14 @@ onUnmounted(() => {
 </template>
 
 <style>
-/* Safe Area Handling für moderne Smartphones (iPhone X etc.) */
+/* Basis-Styling für Header & Nav 
+  Die padding-bottom Logik für den Content wird jetzt über Tailwind 'pb-32' im HTML geregelt.
+*/
 
-/* Header Padding: 1rem (Original p-4) + Safe Area */
 .pt-safe-header {
   padding-top: calc(1rem + env(safe-area-inset-top));
 }
 
-/* Badge Position: 5rem (Original top-20) + Safe Area */
 .top-safe-badge {
   top: calc(5rem + env(safe-area-inset-top));
 }
