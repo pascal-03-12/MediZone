@@ -3,18 +3,15 @@ import { onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useMedicationStore } from '../stores/medication';
 import { useIntakeStore } from '../stores/intake';
-import { useReminderStore } from '../stores/reminder';
 import type { IntakeEntry } from '../types/types';
 
 const route = useRoute();
 const router = useRouter();
 const medStore = useMedicationStore();
 const intakeStore = useIntakeStore();
-const reminderStore = useReminderStore();
 
 const withFood = ref(false);
 const medId = route.params.id as string;
-const newReminderTime = ref('');
 
 const logIntake = async () => {
   if (!medStore.currentMedication) return;
@@ -65,16 +62,8 @@ const logIntake = async () => {
   );
 };
 
-const addReminder = () => {
-  if (!newReminderTime.value) return;
-  reminderStore.addReminder(medId, newReminderTime.value);
-  newReminderTime.value = '';
-};
-
 onMounted(async () => {
   if (medId) {
-    reminderStore.initReminders();
-
     const med = await medStore.fetchMedicationById(medId);
     if (med) {
       medStore.setLastScanned(med);
@@ -155,62 +144,6 @@ onMounted(async () => {
           <p class="text-base">
             {{ medStore.currentMedication.instructions }}
           </p>
-        </div>
-      </section>
-
-      <section class="mb-8 border-t pt-6 border-borderSoft">
-        <h3 class="font-bold text-lg mb-4 text-textMain flex items-center gap-2">
-          ⏰ Erinnerungen
-        </h3>
-
-        <div class="space-y-3 mb-4">
-          <div
-              v-for="reminder in reminderStore.getRemindersByMedId(medId)"
-              :key="reminder.id"
-              class="flex items-center justify-between bg-surface p-3 rounded-xl border border-borderSoft"
-          >
-            <div class="flex items-center gap-3">
-              <input
-                  type="checkbox"
-                  :checked="reminder.enabled"
-                  @change="reminderStore.toggleReminder(reminder.id)"
-                  class="w-5 h-5 text-primary rounded focus:ring-primary cursor-pointer"
-              />
-              <span
-                  :class="{ 'text-textMuted line-through': !reminder.enabled }"
-                  class="font-mono text-lg font-medium text-textMain"
-              >
-                {{ reminder.time }} Uhr
-              </span>
-            </div>
-            <button
-                @click="reminderStore.removeReminder(reminder.id)"
-                class="text-danger hover:opacity-80 text-sm font-medium px-2 py-1 cursor-pointer"
-            >
-              Löschen
-            </button>
-          </div>
-
-          <div
-              v-if="reminderStore.getRemindersByMedId(medId).length === 0"
-              class="text-sm text-textMuted italic"
-          >
-            Keine Erinnerungen gesetzt.
-          </div>
-        </div>
-
-        <div class="flex gap-2">
-          <input
-              type="time"
-              v-model="newReminderTime"
-              class="flex-1 p-2 border border-borderSoft rounded-xl focus:outline-none focus:border-primary font-mono text-lg bg-white"
-          />
-          <button
-              @click="addReminder"
-              class="bg-primary text-white px-6 py-2 rounded-xl font-bold hover:bg-primaryHover transition-colors text-xl cursor-pointer"
-          >
-            +
-          </button>
         </div>
       </section>
 
