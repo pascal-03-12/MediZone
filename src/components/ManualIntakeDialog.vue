@@ -17,10 +17,8 @@ const medicationStore = useMedicationStore();
 const intakeStore = useIntakeStore();
 const { allMedications, loading } = storeToRefs(medicationStore);
 
-// NFC Composable
 const { writeTag, isSupported: nfcSupported } = useNFC();
 
-// Online-Status
 const { isOnline } = useOnlineStatus();
 
 const activeTab = ref<'select' | 'create'>('select');
@@ -30,24 +28,20 @@ const isSubmitting = ref(false);
 
 const withFood = ref(false);
 
-// NEU: Checkbox State für NFC
 const createNfcTag = ref(false);
 
-// Form data
 const newMedName = ref('');
 const newMedSubstance = ref('');
 const newMedDose = ref<number | null>(null);
 const newMedUnit = ref('mg');
 const newMedForm = ref<any>('tablet');
 
-// NEU: Touched-State für Formular-Validierung
 const touchedFields = ref({
   name: false,
   dose: false,
   select: false
 });
 
-// Validierungsfunktionen
 const isNameValid = computed(() => newMedName.value.trim().length > 0);
 const isDoseValid = computed(() => {
   const dose = newMedDose.value;
@@ -61,7 +55,6 @@ const showNameError = computed(() => touchedFields.value.name && !isNameValid.va
 const showDoseError = computed(() => touchedFields.value.dose && !isDoseValid.value);
 const showSelectError = computed(() => touchedFields.value.select && !isSelectValid.value);
 
-// Formular gültig prüfen
 const isFormValid = computed(() => {
   if (activeTab.value === 'select') {
     return isSelectValid.value;
@@ -69,7 +62,6 @@ const isFormValid = computed(() => {
   return isNameValid.value && isDoseValid.value;
 });
 
-// Reset touched state when switching tabs
 watch(activeTab, () => {
   touchedFields.value = { name: false, dose: false, select: false };
 });
@@ -95,11 +87,10 @@ const resetForm = () => {
     activeTab.value = 'select';
     withFood.value = false;
     createNfcTag.value = false;
-    touchedFields.value = { name: false, dose: false, select: false }; // Reset touched state
+    touchedFields.value = { name: false, dose: false, select: false };
 };
 
 const saveIntake = async () => {
-    // Markiere alle Felder als "touched" beim Speichern-Versuch
     if (activeTab.value === 'create') {
       touchedFields.value = { name: true, dose: true, select: false };
     } else {
@@ -115,7 +106,6 @@ const saveIntake = async () => {
         let medToLog: Medication | undefined;
         
         if (activeTab.value === 'create') {
-            // 1. Medikament erstellen
             medToLog = await medicationStore.addCustomMedication({
                 name: newMedName.value,
                 substance: newMedSubstance.value,
@@ -132,7 +122,6 @@ const saveIntake = async () => {
 
         if (!medToLog) throw new Error("Medikament nicht gefunden");
 
-        // 2. Einnahme loggen (lokal hinzufügen, Firebase-Sync läuft im Hintergrund)
         intakeStore.addIntake({
             id: Date.now().toString(),
             medId: medToLog.id,
@@ -143,12 +132,12 @@ const saveIntake = async () => {
             withFood: withFood.value
         });
 
-        // 3. Auf NFC Tag schreiben (nur wenn "Neu anlegen" und Checkbox aktiv und online)
+        await medicationStore.setLastScanned(medToLog);
+
         if (activeTab.value === 'create' && createNfcTag.value && nfcSupported && isOnline.value) {
             await writeTag(`/medication/${medToLog.id}`);
         }
 
-        // Offline-Feedback
         if (wasOffline && activeTab.value === 'create') {
             alert('Medikament lokal gespeichert! Es wird synchronisiert, sobald du wieder online bist.');
         }

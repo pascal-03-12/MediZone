@@ -3,7 +3,6 @@ import { useRouter } from 'vue-router';
 import { useMedicationStore } from '../stores/medication';
 
 export function useNFC() {
-  // Sicherer Check: Prüfen, ob wir im Browser sind UND ob NDEFReader existiert
   const isSupported = typeof window !== 'undefined' && 'NDEFReader' in window;
 
   const isScanning = ref(false);
@@ -11,19 +10,15 @@ export function useNFC() {
   const error = ref<string | null>(null);
   const router = useRouter();
 
-  // AbortController für das Abbrechen des Scans (Android)
   let scanAbortController: AbortController | null = null;
 
   const startScan = async () => {
-    // Wenn nicht unterstützt (z.B. am PC), sofort abbrechen
     if (!isSupported) return;
 
     try {
-      // Zugriff über (window as any) verhindert Abstürze auf Desktop-Browsern
       const NDEFReader = (window as any).NDEFReader;
       const ndef = new NDEFReader();
 
-      // AbortController erstellen für späteres Abbrechen
       scanAbortController = new AbortController();
 
       await ndef.scan({ signal: scanAbortController.signal });
@@ -48,7 +43,6 @@ export function useNFC() {
     } catch (err: any) {
       isScanning.value = false;
       scanAbortController = null;
-      // Abbruch durch User ist kein Fehler
       if (err.name === 'AbortError') {
         error.value = null;
       } else {
@@ -88,7 +82,6 @@ export function useNFC() {
   }
 
   const writeTag = async (path: string) => {
-    // Zusätzlicher Schutz: Auf PC gar nicht erst versuchen
     if (!isSupported) {
       error.value = "NFC wird von diesem Gerät nicht unterstützt.";
       return;
@@ -98,7 +91,6 @@ export function useNFC() {
       isWriting.value = true;
       error.value = null;
 
-      // Auch hier: Sicherer Zugriff
       const NDEFReader = (window as any).NDEFReader;
       const ndef = new NDEFReader();
 
