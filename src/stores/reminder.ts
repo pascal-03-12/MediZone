@@ -12,7 +12,9 @@ export const useReminderStore = defineStore('reminder', () => {
             reminders.value = JSON.parse(stored);
         }
         if ('Notification' in window && Notification.permission === 'default') {
-            Notification.requestPermission();
+            // Wir fragen hier noch nicht explizit an, um den User nicht beim Start zu nerven.
+            // Die Anfrage kommt spätestens beim Erstellen eines Reminders.
+            console.log("Benachrichtigungen sind möglich, aber noch nicht erlaubt.");
         }
         startReminderLoop();
     };
@@ -21,7 +23,15 @@ export const useReminderStore = defineStore('reminder', () => {
         localStorage.setItem('medizone_reminders', JSON.stringify(reminders.value));
     };
 
-    const addReminder = (medId: string, time: string) => {
+    const addReminder = async (medId: string, time: string) => {
+        // Berechtigung anfragen, falls noch nicht geschehen
+        if ('Notification' in window && Notification.permission === 'default') {
+            const permission = await Notification.requestPermission();
+            if (permission !== 'granted') {
+                alert('Benachrichtigungen müssen erlaubt sein, damit Erinnerungen funktionieren.');
+            }
+        }
+
         reminders.value.push({
             id: crypto.randomUUID(),
             medId,
@@ -53,14 +63,20 @@ export const useReminderStore = defineStore('reminder', () => {
 
     const checkReminders = async () => {
         const now = new Date();
-        const currentTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
         const medStore = useMedicationStore();
 
         for (const reminder of reminders.value) {
             if (!reminder.enabled) continue;
 
-            const isTime = reminder.time === currentTime;
+            // Neue Zeit-Logik: Unabhängig von Locale
+            // time ist im Format "HH:MM" gespeichert (vom input type="time")
+            const [remHour, remMinute] = reminder.time.split(':').map(Number);
+
+            const isTime = now.getHours() === remHour && now.getMinutes() === remMinute;
             const isSnoozeOver = reminder.snoozedUntil && now.getTime() >= reminder.snoozedUntil;
+
+            console.log(`Check Reminder: ${reminder.time} vs ${now.getHours()}:${now.getMinutes()} -> isTime=${isTime}`);
 
             if ((isTime && !reminder.snoozedUntil) || isSnoozeOver) {
                 let medName = "Medikament";
