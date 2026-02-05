@@ -26,10 +26,10 @@ export default defineConfig({
                     purpose: 'any maskable'  
                   },
                   {
-                    src: 'android-512.png',  // Das neue blaue Bild (Original)
+                    src: 'android-512.png',  
                     sizes: '512x512',
                     type: 'image/png',
-                    purpose: 'any maskable'  // Wichtig für den Vollbild-Look ohne weißen Rand
+                    purpose: 'any maskable'  
                   }
                 ]
               }
