@@ -29,7 +29,6 @@ function openDB(): Promise<IDBDatabase> {
             }
         };
     });
-
     return dbPromise;
 }
 

@@ -1,38 +1,39 @@
 # MediZone
 
-This template should help get you started developing with Vue 3 in Vite.
+MediZone ist eine **Offline-First Progressive Web App (PWA)** zur Verwaltung und Protokollierung von Medikamenteneinnahmen. Sie ermöglicht das Scannen von Medikamenten via NFC (WebNFC API) und synchronisiert Daten nahtlos mit Firebase, sobald eine Internetverbindung besteht.
 
-## Recommended IDE Setup
+## Kern-Features
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+* **Offline-First Architektur:** Volle Funktionalität auch ohne Internetverbindung dank IndexedDB und Service Workern.
+* **NFC-Integration:** Scannen von Medikamentenpackungen (oder Tags) zur schnellen Erfassung.
+* **Intelligenter Sync:** Automatische Synchronisierung lokaler Änderungen mit Cloud Firestore.
+* **PWA:** Installierbar auf dem Homescreen (Android & iOS).
 
-## Recommended Browser Setup
+---
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+## Notfall-Installation (Fallback)
 
-## Customize configuration
+Sollte das Firebase Hosting (`medizone.info`) nicht erreichbar sein, kann das Projekt lokal ausgeführt werden. Die Firebase-Konfiguration ist bereits integriert.
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+**Voraussetzung:** [Node.js](https://nodejs.org/) ist installiert.
 
-## Project Setup
+1. **Repository klonen & in das Verzeichnis wechseln**
+2. **Abhängigkeiten installieren:**
 
-```sh
 npm install
-```
 
-### Compile and Hot-Reload for Development
-
-```sh
 npm run dev
-```
 
-### Compile and Minify for Production
+### PWA-Funktionen lokal testen (Optional)
 
-```sh
+Da Service Worker im normalen Dev-Modus oft inaktiv sind, nutze diese Befehle, um die volle PWA-Funktionalität (Offline-Modus & Installation) lokal zu testen:
+
+1. **Produktions-Build erstellen:**
+
 npm run build
-```
+
+2. **Produktions-Server starten:**
+
+npm run preview
+
+Die PWA läuft nun unter http://localhost:4173.

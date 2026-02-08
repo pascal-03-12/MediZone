@@ -10,7 +10,7 @@ const authStore = useAuthStore();
 const reminderStore = useReminderStore();
 const medicationStore = useMedicationStore();
 
-// Handler für Online-Event
+// Synchronisierung läuft unsichtbar im Hintergrund
 const handleOnline = () => {
   console.log('Online - starte Synchronisierung...');
   medicationStore.syncPendingMedications();
@@ -20,12 +20,10 @@ onMounted(() => {
   authStore.initAuth();
   reminderStore.initReminders();
   
-  // Bei App-Start: Versuche ausstehende Medikamente zu synchronisieren
   if (navigator.onLine) {
     medicationStore.syncPendingMedications();
   }
   
-  // Event-Listener für Online-Status
   window.addEventListener('online', handleOnline);
 });
 
@@ -35,7 +33,6 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <!-- 🔄 LOADING -->
   <div
       v-if="authStore.loading"
       class="flex justify-center items-center min-h-screen bg-surface"
@@ -45,17 +42,14 @@ onUnmounted(() => {
     </div>
   </div>
 
-  <!-- ✅ APP -->
   <template v-else>
-    <!-- 🌍 GLOBAL APP WRAPPER -->
-    <div class="min-h-screen bg-surface text-textMain">
+    <div class="min-h-screen bg-surface text-textMain pb-32 md:pb-0">
 
-      <!-- HEADER -->
       <header
           v-if="authStore.user"
-          class="p-4 bg-white shadow-sm flex justify-between items-center sticky top-0 z-50"
+          class="p-4 bg-white shadow-sm flex justify-between items-center sticky top-0 z-50 pt-safe-header"
       >
-        <div class="fixed top-20 right-4 z-50 md:hidden">
+        <div class="fixed right-4 z-50 md:hidden top-safe-badge">
           <StreakBadge />
         </div>
 
@@ -106,12 +100,10 @@ onUnmounted(() => {
         </button>
       </header>
 
-      <!-- MAIN CONTENT -->
       <div class="md:container md:mx-auto md:max-w-4xl">
         <RouterView />
       </div>
 
-      <!-- MOBILE NAV -->
       <nav
           v-if="authStore.user"
           class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center z-40 pb-safe"
@@ -148,6 +140,18 @@ onUnmounted(() => {
 </template>
 
 <style>
+/* Basis-Styling für Header & Nav 
+  Die padding-bottom Logik für den Content wird jetzt über Tailwind 'pb-32' im HTML geregelt.
+*/
+
+.pt-safe-header {
+  padding-top: calc(1rem + env(safe-area-inset-top));
+}
+
+.top-safe-badge {
+  top: calc(5rem + env(safe-area-inset-top));
+}
+
 .pb-safe {
   padding-bottom: env(safe-area-inset-bottom, 20px);
 }
