@@ -1,13 +1,11 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted } from 'vue';
 import { useAuthStore } from './stores/auth';
-import { useReminderStore } from './stores/reminder';
 import { useMedicationStore } from './stores/medication';
 import { RouterLink, RouterView } from 'vue-router';
 import StreakBadge from './components/StreakBadge.vue';
 
 const authStore = useAuthStore();
-const reminderStore = useReminderStore();
 const medicationStore = useMedicationStore();
 
 // Synchronisierung läuft im Hintergrund
@@ -18,7 +16,6 @@ const handleOnline = () => {
 
 onMounted(() => {
   authStore.initAuth();
-  reminderStore.initReminders();
   
   if (navigator.onLine) {
     medicationStore.syncPendingMedications();
