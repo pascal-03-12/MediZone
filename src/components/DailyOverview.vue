@@ -8,7 +8,7 @@ const medicationStore = useMedicationStore();
 
 onMounted(() => {
   intakeStore.fetchIntakes();
-  medicationStore.fetchAllMedications(); // Auch Medikamente laden für Details
+  medicationStore.fetchAllMedications(); 
 });
 
 const viewDate = ref(new Date()); 
@@ -22,7 +22,6 @@ const getLocalISODate = (date: Date) => {
 
 const selectedDate = ref(getLocalISODate(new Date()));
 
-// -- HELPER FÜR MEDIKAMENTEN-DETAILS --
 const getMedDetails = (medId: string) => {
     return medicationStore.allMedications.find(m => m.id === medId);
 };
@@ -42,7 +41,7 @@ const translateForm = (form?: string) => {
     return formTranslations[form] || form;
 };
 
-// -- KALENDER LOGIK --
+// Kalender
 const weekDays = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
 
 const monthTitle = computed(() => {
@@ -60,10 +59,8 @@ const calendarDays = computed(() => {
 
   const days = [];
 
-  // Montag als Start (Mo=0 ... So=6 für die Berechnung)
   let startDayOfWeek = (firstDayOfMonth.getDay() + 6) % 7; 
   
-  // Auffülltage davor
   for (let i = startDayOfWeek; i > 0; i--) {
     const d = new Date(year, month, 1 - i);
     days.push({
@@ -73,7 +70,6 @@ const calendarDays = computed(() => {
     });
   }
 
-  // Tage des aktuellen Monats
   for (let i = 1; i <= lastDayOfMonth.getDate(); i++) {
     const d = new Date(year, month, i);
     days.push({
@@ -83,7 +79,6 @@ const calendarDays = computed(() => {
     });
   }
 
-  // Auffülltage danach
   const remainingDays = 42 - days.length;
   if (remainingDays > 0 && remainingDays < 7) { 
      const daysToFill = 7 - (days.length % 7);
@@ -106,7 +101,7 @@ const hasIntake = (dateIso: string) => {
   return intakeStore.intakes.some(i => i.date && i.date.startsWith(dateIso));
 };
 
-// -- NAVIGATION --
+// Navigation
 const changeMonth = (delta: number) => {
   const newDate = new Date(viewDate.value);
   newDate.setMonth(newDate.getMonth() + delta);
@@ -123,7 +118,7 @@ const jumpToToday = () => {
   selectedDate.value = formatDateISO(now);
 };
 
-// -- LISTE --
+// Liste
 const filteredIntakes = computed(() => {
     return intakeStore.getIntakesForDate(selectedDate.value);
 });

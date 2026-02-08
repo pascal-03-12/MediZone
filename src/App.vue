@@ -10,7 +10,7 @@ const authStore = useAuthStore();
 const reminderStore = useReminderStore();
 const medicationStore = useMedicationStore();
 
-// Synchronisierung läuft unsichtbar im Hintergrund
+// Synchronisierung läuft im Hintergrund
 const handleOnline = () => {
   console.log('Online - starte Synchronisierung...');
   medicationStore.syncPendingMedications();
@@ -140,9 +140,6 @@ onUnmounted(() => {
 </template>
 
 <style>
-/* Basis-Styling für Header & Nav 
-  Die padding-bottom Logik für den Content wird jetzt über Tailwind 'pb-32' im HTML geregelt.
-*/
 
 .pt-safe-header {
   padding-top: calc(1rem + env(safe-area-inset-top));

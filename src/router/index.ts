@@ -10,14 +10,14 @@ const router = createRouter({
       component: () => import('../views/HomeView.vue'),
       meta: { requiresAuth: true }
     },
-    // -- NEU --
+
     {
       path: '/dashboard',
       name: 'dashboard',
       component: () => import('../views/DashboardView.vue'),
       meta: { requiresAuth: true }
     },
-    // -- ENDE NEU --
+
     {
       path: '/login',
       name: 'login',
@@ -32,11 +32,9 @@ const router = createRouter({
   ],
 })
 
-// ... (Rest der Datei bleibt gleich, der Auth-Guard ist okay so)
-
 router.beforeEach(async (to, _from, next) => {
   const authStore = useAuthStore()
-  // ... (dieser Teil bleibt unverändert)
+
   if (to.meta.requiresAuth && !authStore.isAuthenticated && !authStore.loading) {
     next('/login')
   } else {

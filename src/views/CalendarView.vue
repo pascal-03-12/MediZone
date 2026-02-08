@@ -13,7 +13,6 @@ onMounted(() => {
   intakeStore.fetchIntakes();
 });
 
-// Robuste Datumsprüfung für die Liste
 const selectedDateIntakes = computed(() => {
   return intakes.value.filter(intake => {
     if (!intake.date) return false;

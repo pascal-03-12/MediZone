@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useNFC } from '../composables/useNFC';
-// DailyOverview Import ENTFERNT
+
 import { useMedicationStore } from '../stores/medication';
 import { storeToRefs } from 'pinia';
 import { onMounted, ref, computed } from 'vue';
@@ -14,7 +14,7 @@ const router = useRouter();
 
 const showManualDialog = ref(false);
 
-// iOS Detection - zeige passiven Scan Hinweis nur auf iOS
+// Scan Hinweis nur auf iOS
 const isIOS = computed(() => {
   return /iPad|iPhone|iPod/.test(navigator.userAgent);
 });

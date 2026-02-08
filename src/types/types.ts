@@ -28,7 +28,7 @@ export type Medication = {
 export type IntakeEntry = {
     id: string;
     medId: MedicationId;
-    medName: string; // <-- NEU: Name des Medikaments
+    medName: string;
     date: string;
     dose: number;
     doseUnit: string;

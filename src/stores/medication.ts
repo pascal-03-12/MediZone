@@ -18,7 +18,7 @@ export const useMedicationStore = defineStore('medication', () => {
   const lastScannedMedication = ref<Medication | null>(null);
   const allMedications = ref<Medication[]>([]);
 
-  // Offline-Status
+  // Offline-Status!!!
   const pendingCount = ref(0);
   const isSyncing = ref(false);
 
@@ -66,7 +66,6 @@ export const useMedicationStore = defineStore('medication', () => {
     const authStore = useAuthStore();
     if (!authStore.user?.uid) return;
 
-    // Explizit zurücksetzen - wichtig für neue Registrierungen
     lastScannedMedication.value = null;
 
     try {
@@ -100,7 +99,7 @@ export const useMedicationStore = defineStore('medication', () => {
 
       allSnap.forEach(doc => {
         const data = doc.data() as any;
-        // Zeige Medikament wenn: Es keine userId hat (Global) ODER userId == eigener UID
+
         if (!data.userId || (uid && data.userId === uid)) {
           relevantMeds.push({ id: doc.id, ...data } as Medication);
         }
@@ -108,7 +107,6 @@ export const useMedicationStore = defineStore('medication', () => {
 
       allMedications.value = relevantMeds;
 
-      // Lade auch ausstehende Offline-Medikamente und zeige sie an
       await loadPendingMedications();
     } catch (e) {
       console.error("Fehler beim Laden aller Medikamente", e);
@@ -117,20 +115,17 @@ export const useMedicationStore = defineStore('medication', () => {
     }
   };
 
-  // Lädt ausstehende Medikamente aus IndexedDB und fügt sie temporär zur Liste hinzu
   const loadPendingMedications = async () => {
     try {
       const pending = await getPendingMedications();
       pendingCount.value = pending.length;
 
-      // Füge ausstehende Medikamente temporär zur Liste hinzu (mit temp ID)
       for (const p of pending) {
         const tempMed: Medication = {
           id: p.tempId,
           ...p.data
         } as Medication;
 
-        // Nur hinzufügen wenn nicht bereits in der Liste
         if (!allMedications.value.some(m => m.id === p.tempId)) {
           allMedications.value.push(tempMed);
         }
@@ -149,7 +144,6 @@ export const useMedicationStore = defineStore('medication', () => {
       userId: authStore.user.uid
     };
 
-    // Prüfe ob online
     if (navigator.onLine) {
       try {
         const docRef = await addDoc(collection(db, 'medications'), newMed);
@@ -161,12 +155,10 @@ export const useMedicationStore = defineStore('medication', () => {
         throw e;
       }
     } else {
-      // Offline: In IndexedDB speichern
       try {
         const pending = await savePendingMedication(newMed);
         pendingCount.value++;
 
-        // Temporäres Medikament zur Liste hinzufügen
         const tempMed: Medication = {
           id: pending.tempId,
           ...newMed
@@ -195,13 +187,10 @@ export const useMedicationStore = defineStore('medication', () => {
 
       for (const p of pending) {
         try {
-          // In Firebase speichern
           const docRef = await addDoc(collection(db, 'medications'), p.data);
 
-          // Aus IndexedDB löschen
           await removePendingMedication(p.tempId);
 
-          // In der Liste die temp ID durch die echte ID ersetzen
           const idx = allMedications.value.findIndex(m => m.id === p.tempId);
           if (idx !== -1) {
             allMedications.value[idx] = { id: docRef.id, ...p.data } as Medication;
@@ -219,7 +208,6 @@ export const useMedicationStore = defineStore('medication', () => {
     }
   };
 
-  // Aktualisiert den pending count
   const updatePendingCount = async () => {
     try {
       pendingCount.value = await getPendingCount();

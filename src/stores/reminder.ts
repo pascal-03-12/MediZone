@@ -69,8 +69,6 @@ export const useReminderStore = defineStore('reminder', () => {
         for (const reminder of reminders.value) {
             if (!reminder.enabled) continue;
 
-            // Neue Zeit-Logik: Unabhängig von Locale
-            // time ist im Format "HH:MM" gespeichert (vom input type="time")
             const [remHour, remMinute] = reminder.time.split(':').map(Number);
 
             const isTime = now.getHours() === remHour && now.getMinutes() === remMinute;

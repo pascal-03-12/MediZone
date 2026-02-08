@@ -23,7 +23,7 @@ function openDB(): Promise<IDBDatabase> {
         request.onupgradeneeded = (event) => {
             const db = (event.target as IDBOpenDBRequest).result;
 
-            // Store für ausstehende (offline erstellte) Medikamente
+            // Store für offline erstellte Medikamente
             if (!db.objectStoreNames.contains(PENDING_STORE)) {
                 db.createObjectStore(PENDING_STORE, { keyPath: 'tempId' });
             }
