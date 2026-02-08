@@ -18,7 +18,7 @@ export const useMedicationStore = defineStore('medication', () => {
   const lastScannedMedication = ref<Medication | null>(null);
   const allMedications = ref<Medication[]>([]);
 
-  // Offline-Status!!!
+  // Offline-Status
   const pendingCount = ref(0);
   const isSyncing = ref(false);
 
